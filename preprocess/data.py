@@ -95,19 +95,14 @@ class Data:
                 print "segments reload corrected tumor reads error"
             segment_index = segment_index + 1
 
-    def load_segmentsn(self, normal_bam, tumor_bam, bed_file_normalized_name):
+    def load_segmentsn(self, bed_file_normalized_name):
         """
 
         :bed_file_normalized_name: TODO
         :returns: TODO
 
         """
-        chrom_idx_list = constants.CHROM_IDX_LIST
-        chrom_start = constants.CHROM_START
 
-        sam_SQ = normal_bam.header['SQ']
-        sam_chrom_format = get_chrom_format(map(lambda x: x['SN'], sam_SQ))
-        chrom_lens, chrom_idxs = get_chrom_lens_idxs(chrom_idx_list, sam_SQ)
         bed_chroms, bed_starts, bed_ends, tumor_reads, normal_reads =\
             BEDnParser(bed_file_normalized_name)
         get_chrom_format(bed_chroms)
@@ -115,23 +110,7 @@ class Data:
 
         for i in range(0, bed_num):
             chrom_idx = chrom_name_to_idx(bed_chroms[i])
-            chrom_name = chrom_idx_to_name(chrom_idx, sam_chrom_format)
-            seg_name = get_segment_name(chrom_name, bed_starts[i], bed_ends[i])
-
-            if chrom_idx not in chrom_idx_list:
-                print 'Chromsome {0} not found, segment {1} excluded...'.format(
-                    bed_chroms[i], seg_name)
-                sys.stdout.flush()
-                continue
-
-            chrom_lst_idx = chrom_idxs.index(chrom_idx)
-
-            if bed_starts[i] < chrom_start or bed_ends[
-                    i] > chrom_lens[chrom_lst_idx]:
-                print 'Out of range chromsome {0}, segment {1} excluded...'.\
-                    format(bed_chroms[i], seg_name)
-                sys.stdout.flush()
-                continue
+            seg_name = get_segment_name(bed_chroms[i], bed_starts[i], bed_ends[i])
 
             normal_reads_num = normal_reads[i]
             tumor_reads_num = tumor_reads[i]
@@ -139,7 +118,7 @@ class Data:
             segment_i = Segment()
             segment_i.name = seg_name
             segment_i.chrom_idx = chrom_idx
-            segment_i.chrom_name = chrom_name
+            segment_i.chrom_name = bed_chroms[i]
             segment_i.start = bed_starts[i]
             segment_i.end = bed_ends[i]
             segment_i.normal_reads_num = normal_reads_num
@@ -198,6 +177,27 @@ class Data:
 
             self.segments.append(segment_i)
             self.seg_num += 1
+
+    def load_counts_fromSNP(self, tumorData, normalData):
+        """Load the SNP data into each segment, the format is paired_counts and BAF_counts
+
+        :tumorData: TODO
+        :normalData: TODO
+        :returns: TODO
+
+        """
+
+        for j in range(0, len(self.segments)):
+            normalData_temp, tumorData_temp = get_row_by_segment(tumorData, normalData, self.segments[i])
+            paired_counts_temp, BAF_counts_temp = get_paired_and_BAF_counts(normalData_temp, tumorData_temp)
+
+            self.segments[i].paired_counts = paired_counts_temp
+            self.segments[i].BAF_counts = BAF_counts_temp
+
+
+
+
+
 
     def get_LOH_frac(self):
         for j in range(0, self.seg_num):
