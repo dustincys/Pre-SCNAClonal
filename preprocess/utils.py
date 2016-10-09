@@ -500,42 +500,31 @@ def calculate_BAF(
     return tumorBAF, normalBAF, newTumorData, newNormalData
 
 
-def filter_normal_heterozygous(
-    tumorData,
-    normalData,
-    chrmsToUse,
-    minSNP,
-    gamma,
-     numProcesses):
-    """
-    :returns: TODO
-
-    """
+def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
     # function to select columns from a 2D list
-        select_col = lambda array, colNum: map(lambda x: x[colNum], array)
+    select_col = lambda array, colNum: map(lambda x: x[colNum], array)
 
-        # vectors of tumor data
-        tumorMutCount = select_col(tumorData, 3)
-        tumorRefCount = select_col(tumorData, 2)
+    # vectors of tumor data
+    tumorMutCount = select_col(tumorData, 3)
+    tumorRefCount = select_col(tumorData, 2)
 
-        # vectors of normal data
-        normalMutCount = select_col(normalData, 3)
-        normalRefCount = select_col(normalData, 2)
+    # vectors of normal data
+    normalMutCount = select_col(normalData, 3)
+    normalRefCount = select_col(normalData, 2)
 
-        # denominators for BAFs
-        tumorDenom = map(sum, zip(tumorMutCount, tumorRefCount))
-        normalDenom = map(sum, zip(normalMutCount, normalRefCount))
+    # denominators for BAFs
+    tumorDenom = map(sum, zip(tumorMutCount, tumorRefCount))
+    normalDenom = map(sum, zip(normalMutCount, normalRefCount))
 
-        tumorBAF = []
-        normalBAF = []
-        newTumorData = []
-        newNormalData = []
-        print "Determining heterozygosity."
-        p = Pool(numProcesses)
-        repGamma = [gamma for i in range(len(tumorData))]
-        isHet = p.map(
-            is_heterozygous, zip(
-                normalRefCount, normalMutCount, repGamma))
+    tumorBAF = []
+    normalBAF = []
+    newTumorData = []
+    newNormalData = []
+    print "Determining heterozygosity."
+    p = Pool(numProcesses)
+    repGamma = [gamma for i in range(len(tumorData))]
+    isHet = p.map( is_heterozygous,
+                  zip(normalRefCount, normalMutCount, repGamma))
 
     tumorData_filtered = select_col(
         filter(lambda x: x[1], zip(tumorData, isHet)), 0)
@@ -635,7 +624,7 @@ def get_row_by_segment(tumorData, normalData, segment):
     :returns: TODO
 
     """
-    tumorData = filter_normal_heterozygous(tumorData, normalData)
+    tumorData, normalData = filter_normal_heterozygous(tumorData, normalData)
 
     tumorData_temp = filter(lambda item: item[0] == int(segment.chrom_name)
                             and (item[1] >= segment.start and item <=
@@ -647,7 +636,7 @@ def get_row_by_segment(tumorData, normalData, segment):
     return tumorData_temp, normalData_temp
 
 
-def get_paired_and_BAF_counts(tumorData, normalData):
+def get_paired_counts(tumorData, normalData):
     """
 
     :tumorData: TODO
@@ -655,3 +644,18 @@ def get_paired_and_BAF_counts(tumorData, normalData):
     :returns: TODO
 
     """
+
+    paired_counts_temp = []
+    for i in range(len(normalData)):
+        paired_counts_temp.append([int(normaldata[i][2]),
+                                   int(normaldata[i][3]),
+                                   int(tumorData[i][2]),
+                                   int(tumorData[i][3]),
+                                   int(normalData[i][0]),
+                                   int(normalData[i][1]]))
+    paired_counts_j = np.array(paired_counts_temp)
+
+    return paired_counts_j
+
+
+

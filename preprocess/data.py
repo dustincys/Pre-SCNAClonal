@@ -188,15 +188,9 @@ class Data:
         """
 
         for j in range(0, len(self.segments)):
-            normalData_temp, tumorData_temp = get_row_by_segment(tumorData, normalData, self.segments[i])
-            paired_counts_temp, BAF_counts_temp = get_paired_and_BAF_counts(normalData_temp, tumorData_temp)
-
-            self.segments[i].paired_counts = paired_counts_temp
-            self.segments[i].BAF_counts = BAF_counts_temp
-
-
-
-
+            normalData_temp, tumorData_temp = get_row_by_segment(tumorData, normalData, self.segments[j])
+            paired_counts_temp = get_paired_counts(normalData_temp, tumorData_temp)
+            self.segments[j].paired_counts = paired_counts_temp
 
 
     def get_LOH_frac(self):
