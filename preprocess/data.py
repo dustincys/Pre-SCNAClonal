@@ -61,6 +61,7 @@ class Data:
         :returns: TODO
 
         """
+
         chrom_idx_list = constants.CHROM_IDX_LIST
         chrom_start = constants.CHROM_START
 
@@ -110,7 +111,8 @@ class Data:
 
         for i in range(0, bed_num):
             chrom_idx = chrom_name_to_idx(bed_chroms[i])
-            seg_name = get_segment_name(bed_chroms[i], bed_starts[i], bed_ends[i])
+            seg_name = get_segment_name(
+                bed_chroms[i], bed_starts[i], bed_ends[i])
 
             normal_reads_num = normal_reads[i]
             tumor_reads_num = tumor_reads[i]
@@ -173,25 +175,27 @@ class Data:
             segment_i.end = bed_ends[i]
             segment_i.normal_reads_num = normal_reads_num
             segment_i.tumor_reads_num = tumor_reads_num
-            segment_i.log2_ratio = np.log2(1.0*tumor_reads_num/normal_reads_num)
+            segment_i.log2_ratio = np.log2(1.0 *
+                                           tumor_reads_num/normal_reads_num)
 
             self.segments.append(segment_i)
             self.seg_num += 1
 
     def load_counts_fromSNP(self, tumorData, normalData):
-        """Load the SNP data into each segment, the format is paired_counts and BAF_counts
+        """Load the SNP data into each segment,
+        the format is paired_counts and BAF_counts
 
         :tumorData: TODO
         :normalData: TODO
         :returns: TODO
 
         """
-
         for j in range(0, len(self.segments)):
-            normalData_temp, tumorData_temp = get_row_by_segment(tumorData, normalData, self.segments[j])
-            paired_counts_temp = get_paired_counts(normalData_temp, tumorData_temp)
+            normalData_temp, tumorData_temp = get_row_by_segment(
+                tumorData, normalData, self.segments[j])
+            paired_counts_temp = get_paired_counts(
+                normalData_temp, tumorData_temp)
             self.segments[j].paired_counts = paired_counts_temp
-
 
     def get_LOH_frac(self):
         for j in range(0, self.seg_num):
@@ -259,7 +263,6 @@ class Data:
     def compute_Lambda_S_hc(self):
         """ compute the Lambda S, through hierarchy clustering
         :returns: TODO
-
         """
 
         thresh = constants.HC_THRESH
@@ -378,3 +381,26 @@ class Data:
             sys.exit(1)
 
         self.Lambda_S = rdr_min
+
+    def compute_normal_boundary(self):
+        """ compute the Lambda S, through hierarchy clustering
+        :returns: TODO
+
+        """
+        baselines = filter(lambda seg: seg.baseline_label == 'TRUE',
+                           self.segments)
+        sum_r_n = sum(map(lambda seg: seg.normal_reads_num, self.segments))
+        sum_r_t = sum(map(lambda seg: seg.tumor_reads_num, self.segments))
+
+        upper_bound = -float('inf')
+        lower_bound = float('inf')
+
+        for seg in baselines:
+            ratio = (float(seg.tumor_reads_num) / float(sum_r_t)
+                     ) / (float(seg.normal_reads_num) / float(sum_r_n))
+            if upper_bound < ratio:
+                upper_bound = ratio
+            if lower_bound > ratio:
+                lower_bound = ratio
+
+        return upper_bound, lower_bound

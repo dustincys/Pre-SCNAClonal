@@ -382,7 +382,7 @@ def gccorrect(args):
          > lm_lowerbound,]
          loga_gc_lm = lm(temp$loga ~ temp$gc)
          getA <-function(x){
-         loga_gc_lm$coefficients[[2]] * x + loga_gc_lm$coefficients[[1]]
+            loga_gc_lm$coefficients[[2]] * x + loga_gc_lm$coefficients[[1]]
          }
 
          k = median(bicseq_data$loga)
@@ -523,7 +523,7 @@ def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
     print "Determining heterozygosity."
     p = Pool(numProcesses)
     repGamma = [gamma for i in range(len(tumorData))]
-    isHet = p.map( is_heterozygous,
+    isHet = p.map(is_heterozygous,
                   zip(normalRefCount, normalMutCount, repGamma))
 
     tumorData_filtered = select_col(
@@ -656,6 +656,3 @@ def get_paired_counts(tumorData, normalData):
     paired_counts_j = np.array(paired_counts_temp)
 
     return paired_counts_j
-
-
-
