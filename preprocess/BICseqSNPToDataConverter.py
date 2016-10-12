@@ -46,7 +46,6 @@ class BICseqSNPToDataConverter:
         """
         self._load_segments()
         self._load_SNP()
-        self._get_Baseline()
 
         self._output()
         pass

@@ -34,6 +34,7 @@ def BEDnParser(bed_file_name):
     ends = []
     tumorReadsn = []
     normalReads = []
+    gcs = []
 
     for line in inbed:
         fields = line.split('\t')
@@ -43,17 +44,18 @@ def BEDnParser(bed_file_name):
         if chrom_idx == -1:
             continue
 
-        chrom_name, start, end, tumorrd, normalrd = fields[0:5]
+        chrom_name, start, end, tumorrd, normalrd, gc = fields[0:6]
 
         chroms.append(chrom_name)
         starts.append(int(start))
         ends.append(int(end))
         tumorReadsn.append(int(tumorrd))
         normalReads.append(int(normalrd))
+        gcs.append(float(gc))
 
     inbed.close()
 
-    return (chroms, starts, ends, tumorReadsn, normalReads)
+    return (chroms, starts, ends, tumorReadsn, normalReads, gcs)
 
 
 def BEDParser(bed_file_name):
@@ -62,6 +64,7 @@ def BEDParser(bed_file_name):
     chroms = []
     starts = []
     ends = []
+    gcs = []
 
     for line in inbed:
         fields = line.split('\t')
@@ -71,15 +74,16 @@ def BEDParser(bed_file_name):
         if chrom_idx == -1:
             continue
 
-        chrom_name, start, end = fields[0:3]
+        chrom_name, start, end, gc = fields[0:4]
 
         chroms.append(chrom_name)
         starts.append(int(start))
         ends.append(int(end))
+        gcs.append(float(gc))
 
     inbed.close()
 
-    return (chroms, starts, ends)
+    return (chroms, starts, ends, gcs)
 
 
 def chrom_idx_to_name(idx, format):

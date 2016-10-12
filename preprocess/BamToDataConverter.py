@@ -11,9 +11,19 @@
 # =============================================================================
 '''
 
-from mixclone.preprocess.utils import *
+import sys
+import pickle as pkl
+from multiprocessing import Pool
+import numpy as np
+import pysam
+
+from GCBASELIN.preprocess.data import Data
+from GCBASELIN.preprocess.iofun import PairedCountsIterator, PairedPileupIterator
+from GCBASELIN.preprocess.utils import *
+
 
 class BamToDataConverter:
+
     def __init__(self, normal_bam_filename, tumor_bam_filename,
                  reference_genome_filename, input_filename_base, segments_bed,
                  min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
@@ -30,7 +40,10 @@ class BamToDataConverter:
 
         self.data = Data()
 
-    def convert(self):
+    def convert(self, methods):
+
+        gc_correction_method, baseline_selection_method = methods
+
         self._load_segments()
 
         self._get_counts()
@@ -78,7 +91,7 @@ class BamToDataConverter:
         if process_num > seg_num:
             process_num = seg_num
 
-        pool = Pool(processes = process_num)
+        pool = Pool(processes=process_num)
 
         args_list = []
 
@@ -89,9 +102,18 @@ class BamToDataConverter:
             start = self.data.segments[j].start
             end = self.data.segments[j].end
 
-            args_tuple = (seg_name, chrom_name, chrom_idx, start, end, self.normal_bam_filename,
-                          self.tumor_bam_filename, self.reference_genome_filename,
-                          self.min_depth, self.min_bqual, self.min_mqual)
+            args_tuple = (
+                seg_name,
+                chrom_name,
+                chrom_idx,
+                start,
+                end,
+                self.normal_bam_filename,
+                self.tumor_bam_filename,
+                self.reference_genome_filename,
+                self.min_depth,
+                self.min_bqual,
+                self.min_mqual)
 
             args_list.append(args_tuple)
 
@@ -111,9 +133,11 @@ class BamToDataConverter:
 #===============================================================================
 # Function
 #===============================================================================
+
+
 def process_by_segment(args_tuple):
     seg_name, chrom_name, chrom_idx, start, end, normal_bam_filename, tumor_bam_filename, \
-    reference_genome_filename, min_depth, min_bqual, min_mqual= args_tuple
+        reference_genome_filename, min_depth, min_bqual, min_mqual = args_tuple
 
     print 'Preprocessing segment {0}...'.format(seg_name)
     sys.stdout.flush()
@@ -125,9 +149,16 @@ def process_by_segment(args_tuple):
     normal_pileup_iter = normal_bam.pileup(chrom_name, start, end)
     tumor_pileup_iter = tumor_bam.pileup(chrom_name, start, end)
 
-    paired_pileup_iter = PairedPileupIterator(normal_pileup_iter, tumor_pileup_iter, start, end)
-    paired_counts_iter = PairedCountsIterator(paired_pileup_iter, ref_genome_fasta, chrom_name, chrom_idx,
-                                              min_depth, min_bqual, min_mqual)
+    paired_pileup_iter = PairedPileupIterator(
+        normal_pileup_iter, tumor_pileup_iter, start, end)
+    paired_counts_iter = PairedCountsIterator(
+        paired_pileup_iter,
+        ref_genome_fasta,
+        chrom_name,
+        chrom_idx,
+        min_depth,
+        min_bqual,
+     min_mqual)
 
     paired_counts_j, BAF_counts_j = iterator_to_counts(paired_counts_iter)
     counts_tuple_j = (paired_counts_j, BAF_counts_j)
@@ -137,6 +168,7 @@ def process_by_segment(args_tuple):
     ref_genome_fasta.close()
 
     return counts_tuple_j
+
 
 def iterator_to_counts(paired_counts_iter):
     buff = 100000
@@ -155,7 +187,7 @@ def iterator_to_counts(paired_counts_iter):
 
         buff_counts = np.array(buff_counts)
 
-        if buff_counts.shape[0] != 0 :
+        if buff_counts.shape[0] != 0:
             BAF_counts_buff = get_BAF_counts(buff_counts)
             BAF_counts_j += BAF_counts_buff
 
@@ -169,7 +201,7 @@ def iterator_to_counts(paired_counts_iter):
 
     buff_counts = np.array(buff_counts)
 
-    if buff_counts.shape[0] != 0 :
+    if buff_counts.shape[0] != 0:
         BAF_counts_buff = get_BAF_counts(buff_counts)
         BAF_counts_j += BAF_counts_buff
 

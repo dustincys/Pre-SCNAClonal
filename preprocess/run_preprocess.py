@@ -1,17 +1,25 @@
-import sys
+'''
+# =============================================================================
+#      FileName: run_preprocess.py
+#          Desc: run_preprocess
+#        Author: Chu Yanshuo
+#         Email: chu@yanshuo.name
+#      HomePage: http://yanshuo.name
+#       Version: 0.0.1
+#    LastChange: 2016-10-11 10:57:17
+#       History: Yi Li
+# =============================================================================
+'''
+
 import time
-import pickle as pkl
-from multiprocessing import Pool
 
-import numpy as np
-import pysam
-
-from mixclone import constants
-from mixclone.preprocess.data import Data
-from mixclone.preprocess.io import PairedCountsIterator, PairedPileupIterator
-from mixclone.preprocess.utils import *
 
 def run_preprocess(args):
+    '''
+    args.gc_correction_method: manual, auto
+    args.baseline_selection_method: manual, auto
+    '''
+
     time_start = time.time()
 
     if "MixClone" == args.IOFormat:
@@ -24,7 +32,7 @@ def run_preprocess(args):
             min_depth=args.min_depth,
             min_bqual=args.min_base_qual,
             min_mqual=args.min_map_qual,
-            process_num = args.process_num
+            process_num=args.process_num
         )
     elif "THetA" == args.IOFormat:
         converter = BICseqSNPToDataConverter(
@@ -33,7 +41,8 @@ def run_preprocess(args):
             args.normal_SNP,
         )
 
-    converter.convert()
+    methods = (args.gc_correction_method, args.baseline_selection_method)
+    converter.convert(methods)
 
     time_end = time.time()
 
