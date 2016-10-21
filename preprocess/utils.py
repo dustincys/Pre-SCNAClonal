@@ -19,8 +19,7 @@ from scipy.stats import binom
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 
-from mixclone import constants
-
+import constants
 
 def BEDnParser(bed_file_name):
     """TODO: Docstring for BEDnParser.
@@ -656,7 +655,7 @@ def get_paired_counts(tumorData, normalData):
                                    int(tumorData[i][2]),
                                    int(tumorData[i][3]),
                                    int(normalData[i][0]),
-                                   int(normalData[i][1]]))
+                                   int(normalData[i][1])])
     paired_counts_j = np.array(paired_counts_temp)
 
     return paired_counts_j

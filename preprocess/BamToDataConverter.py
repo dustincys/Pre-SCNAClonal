@@ -17,21 +17,25 @@ from multiprocessing import Pool
 import numpy as np
 import pysam
 
-from GCBASELIN.preprocess.data import Data
-from GCBASELIN.preprocess.iofun import PairedCountsIterator, PairedPileupIterator
-from GCBASELIN.preprocess.utils import *
+from preprocess.data import Data
+from preprocess.iofun import PairedCountsIterator, PairedPileupIterator
+from preprocess.utils import *
 
 
-class BamToDataConverter:
+class MixClone_Converter:
 
     def __init__(self, normal_bam_filename, tumor_bam_filename,
                  reference_genome_filename, input_filename_base, segments_bed,
-                 min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
+                 max_copynumber, subclone_num,
+                 min_depth=20, min_bqual=10, min_mqual=10,  process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
         self.reference_genome_filename = reference_genome_filename
         self.input_filename_base = input_filename_base
         self.segments_bed = segments_bed
+
+        self.max_copynumber = max_copynumber
+        self.subclone_num = subclone_num
 
         self.min_depth = min_depth
         self.min_bqual = min_bqual
@@ -44,19 +48,42 @@ class BamToDataConverter:
 
         gc_correction_method, baseline_selection_method = methods
 
+        if "auto" == gc_correction_method:
+            self._gccorrection()
+
         self._load_segments()
 
+        if "visual" == gc_correction_method:
+            self._visual_gccorrection()
+
         self._get_counts()
+        self._baseline_selection()
 
-        self._get_LOH_frac()
-
-        self._get_APM_frac()
+        if "visual" == gc_correction_method:
+            self._visual_baseline_selection()
 
         data_file_name = self.input_filename_base + '.MixClone.input.pkl'
         outfile = open(data_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
 
         outfile.close()
+
+    def _baseline_selection(self):
+        self._get_LOH_frac()
+        self._get_LOH_status()
+        self._get_APM_frac()
+        self._get_APM_status()
+        self._compute_Lambda_S()
+
+    def _get_APM_status(self):
+        self.data.get_APM_status(self.baseline_thred_APM)
+
+    def _get_LOH_status(self):
+        self.data.get_LOH_status(self.baseline_thred_LOH, flag_runpreprocess = True)
+
+    def _compute_Lambda_S(self):
+        self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num,
+                                   flag_runpreprocess = True)
 
     def _load_segmentsn(self):
         """

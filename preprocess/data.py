@@ -16,8 +16,10 @@ import numpy as np
 import scipy.cluster.hierarchy as hcluster
 from collections import Counter
 
-from GCBASELINE import constants
-from GCBASELINE.preprocess.utils import *
+#from GCBASELINE import constants
+#from GCBASELINE.preprocess.utils import *
+from utils import *
+import constants
 
 
 class Segment:
@@ -127,7 +129,11 @@ class Data:
             segment_i.end = bed_ends[i]
             segment_i.normal_reads_num = normal_reads_num
             segment_i.tumor_reads_num = tumor_reads_num
-            segment_i.log2_ratio = np.log2(1.0*tumor_reads_num/normal_reads_num)
+
+            if 0 == normal_reads_num:
+                segment_i.log2_ratio = -float('Inf')
+            else:
+                segment_i.log2_ratio = np.log2(1.0*tumor_reads_num/normal_reads_num)
 
             segment_i.gc = gcs[i]
 
@@ -215,15 +221,19 @@ class Data:
             self.segments[j].APM_frac = get_APM_frac_MAXMIN(
                 self.segments[j].paired_counts)
 
-    def get_LOH_status(self, baseline_thred):
-        LOH_num = 0
-        for j in range(0, self.seg_num):
-            self.segments[j].LOH_status = get_LOH_status(
-                self.segments[j].LOH_frac, baseline_thred)
-            if self.segments[j].LOH_status == "TRUE":
-                LOH_num = LOH_num + 1
+    def get_LOH_status(self, baseline_thred, flag_runpreprocess = False ):
 
-        print "LOH_num/seg_num = {0}/{1}".format(LOH_num, self.seg_num)
+        if flag_runpreprocess:
+            LOH_num = 0
+            for j in range(0, self.seg_num):
+                self.segments[j].LOH_status = get_LOH_status(
+                    self.segments[j].LOH_frac, baseline_thred)
+                if self.segments[j].LOH_status == "TRUE":
+                    LOH_num = LOH_num + 1
+
+            print "LOH_num/seg_num = {0}/{1}".format(LOH_num, self.seg_num)
+        else:
+            print "get_LOH_status function called from model."
 
     def get_APM_status(self, baseline_thred_APM):
         APM_num = 0
@@ -235,11 +245,14 @@ class Data:
 
         print "APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
 
-    def compute_Lambda_S(self, max_copynumber, subclone_num):
+    def compute_Lambda_S(self, max_copynumber, subclone_num,
+                            flag_runpreprocess = False):
         """ compute the Lambda S, through hierarchy clustering
-        :returns: TODO
-
         """
+
+        if not flag_runpreprocess:
+            print "compute_Lambda_S function called from model"
+            return
 
         thresh = constants.HC_THRESH
 
@@ -329,3 +342,29 @@ class Data:
                 lower_bound = ratio
 
         return upper_bound, lower_bound
+
+    def update_LOHAPM_t(self, LOH_THRED, APM_THRED, max_copynumber,
+                        subclone_num):
+        """Update LOH APM and baseline according to LOH_THRED and
+        APM_THRED
+        """
+        self.reset_LOH_status()
+        self.reset_APM_status()
+        self.reset_baseline_label()
+        self.get_LOH_status(LOH_THRED)
+        self.get_APM_status(APM_THRED)
+#todo
+        self.compute_Lambda_S(max_copynumber, subclone_num)
+
+    def reset_LOH_status(self):
+        for j in range(0, self.seg_num):
+            self.segments[j].LOH_status = "FALSE"
+
+    def reset_APM_status(self):
+        for j in range(0, self.seg_num):
+            self.segments[j].APM_status = "FALSE"
+
+    def reset_baseline_label(self):
+        for j in range(0, self.seg_num):
+            self.segments[j].baseline_label = 'FALSE'
+

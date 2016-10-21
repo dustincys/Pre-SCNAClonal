@@ -114,6 +114,9 @@ class GCStripePlot():
         self.colorin = colorConverter.to_rgba('red', self.alpha0)
         self.colorout = colorConverter.to_rgba('blue', self.alpha0)
 
+    def test():
+        return 1
+
     def output(self):
         """
         :returns: TODO
@@ -157,8 +160,8 @@ class GCStripePlot():
 
         fig, ax = plt.subplots()
 
-        pts = ax.scatter(x0, y0, s=self.area0, alpha=self.alpha0, color = "b")
-        plt.subplots_adjust(left=0.25, bottom=0.35)
+        pts = ax.scatter(x0, y0, s=self.area0, alpha=self.alpha0, color="b")
+        plt.subplots_adjust(bottom=0.35)
 
         A = np.vstack([x0, np.ones(len(x0))]).T
         self.m0, self.c0 = np.linalg.lstsq(A, y0)[0]
@@ -175,8 +178,8 @@ class GCStripePlot():
         axarea = plt.axes([0.25, 0.25, 0.65, 0.03], axisbg=axcolor)
 
         sm = Slider(axm, 'slope', -np.pi/4, np.pi/4, valinit=0)
-        sc = Slider( axc, 'interception', -(max(self.y) - min( self.y)) / 4,
-                    (max(self.y) - min( self.y)) / 4, valinit=0)
+        sc = Slider(axc, 'interception', -(max(self.y) - min(self.y)) / 4,
+                    (max(self.y) - min(self.y)) / 4, valinit=0)
         salpha = Slider(axalpha, 'alpha', 0, 0.8, valinit=self.alpha0)
         sarea = Slider(axarea, 'area', 1, 50, valinit=self.area0)
 
@@ -188,7 +191,7 @@ class GCStripePlot():
             y_axis = np.median(self.y)
             x_axis = (y_axis - self.c) / self.m
             self._updateM(sm.val)
-            self.c =  y_axis - self.m * x_axis
+            self.c = y_axis - self.m * x_axis
             fl.set_ydata(self.m*xseq + self.c)
             fig.canvas.draw_idle()
 
@@ -302,6 +305,7 @@ def main():
 
     gsp = GCStripePlot(segments, 20000)
     gsp.plot()
+    print gsp.output()
 
 
 if __name__ == "__main__":
