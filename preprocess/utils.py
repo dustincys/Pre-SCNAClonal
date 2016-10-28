@@ -15,11 +15,12 @@ import sys
 import numpy as np
 from scipy.stats import binom
 
-
 import rpy2.robjects as ro
-from rpy2.robjects.packages import importr
+
+from multiprocessing import Pool
 
 import constants
+
 
 def BEDnParser(bed_file_name):
     """TODO: Docstring for BEDnParser.
@@ -117,7 +118,7 @@ def get_chrom_format(chroms):
             break
         else:
             try:
-                idx = int(chrom)
+                int(chrom)
                 format = 'ENSEMBL'
                 break
             except:
@@ -213,10 +214,8 @@ def get_APM_frac_MAXMIN(counts):
     l_T = np.min(counts[:, 2:4], axis=1)
     p_T = l_T * 1.0 / d_T
 
-    APM_num = np.where(
-        np.logical_and(
-            p_T > APM_N_MIN,
-         p_T < APM_N_MAX))[0].shape[0]
+    APM_num = np.where(np.logical_and(p_T > APM_N_MIN,
+                                      p_T < APM_N_MAX))[0].shape[0]
     APM_frac = APM_num*1.0/I
 
     return APM_frac
@@ -524,10 +523,11 @@ def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
     newTumorData = []
     newNormalData = []
     print "Determining heterozygosity."
-    p = Pool(numProcesses)
     repGamma = [gamma for i in range(len(tumorData))]
-    isHet = p.map(is_heterozygous,
-                  zip(normalRefCount, normalMutCount, repGamma))
+    wholeData = zip(normalRefCount, normalMutCount, repGamma)
+    p = Pool(numProcesses)
+    print wholeData[0]
+    isHet = p.map(is_heterozygous, wholeData)
 
     tumorData_filtered = select_col(
         filter(lambda x: x[1], zip(tumorData, isHet)), 0)
@@ -537,7 +537,7 @@ def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
     return tumorData_filtered, normalData_filtered
 
 
-def is_heterozygous((n_a, n_b, gamma)):
+def is_heterozygous(xxx_todo_changeme):
     """
     Determines if an allele should be considered heterozygous.
 
@@ -550,7 +550,7 @@ def is_heterozygous((n_a, n_b, gamma)):
     Returns:
             A boolean indicating whether or not the allele should be considered heterozygous.
     """
-
+    (n_a, n_b, gamma) = xxx_todo_changeme
     if n_a == -1 or n_b == -1:
         return False
 
@@ -627,7 +627,10 @@ def get_row_by_segment(tumorData, normalData, segment):
     :returns: TODO
 
     """
-    tumorData, normalData = filter_normal_heterozygous(tumorData, normalData)
+    gamma = constants.GAMMA
+    numProcesses = constants.NUMPROCESSES
+    tumorData, normalData = filter_normal_heterozygous(
+        tumorData, normalData, gamma, numProcesses)
 
     tumorData_temp = filter(lambda item: item[0] == int(segment.chrom_name)
                             and (item[1] >= segment.start and item <=

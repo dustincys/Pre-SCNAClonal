@@ -15,6 +15,7 @@ from plotGC import GCStripePlot
 from plotBaseline import BaselinePlot
 
 from data import Data
+from utils import read_snp_file
 
 
 class THetA_Converter:
@@ -140,8 +141,8 @@ class THetA_Converter:
         :returns: TODO
 
         """
-        tumorData = read_snp_file(tumorfile)
-        normalData = read_snp_file(normalfile)
+        tumorData = read_snp_file(self.tumor_SNP_fileName)
+        normalData = read_snp_file(self.normal_SNP_fileName)
 
         # generate the paired_counts and BAF_counts from snp
         self.data.load_counts_fromSNP(tumorData, normalData)
