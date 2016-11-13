@@ -143,6 +143,28 @@ class GCStripePlot():
         """
         self.c = self.c1 + ct
 
+    def sampleln(self, n_list, m):
+        """
+        :n: sampling number
+        :m: iteration number
+        :returns: TODO
+
+        """
+        with open("/home/dustin/temp/sampling_result.txt", "w") as outFile:
+            outFile.write("n\tm\ta\tb\n")
+            for n in n_list:
+                for i in range(m):
+                    sampledSegs = np.random.choice(self.segments, n)
+                    x0 = np.array(map(lambda seg: seg.gc, sampledSegs))
+                    y0 = np.array(
+                        map(lambda seg: np.log(seg.tumor_reads_num + 1) -
+                            np.log(seg.normal_reads_num + 1), sampledSegs))
+                    A = np.vstack([x0, np.ones(len(x0))]).T
+                    a, b = np.linalg.lstsq(A, y0)[0]
+                    outFile.write("{0}\t{1}\t{2}\t{3}\n".format(n, m, a, b))
+
+        print "finished sampling"
+
     def plot(self):
         """plot the graph
         :returns:

@@ -16,6 +16,7 @@ from plotBaseline import BaselinePlot
 
 from data import Data
 from utils import read_snp_file
+from mcmc import MCMCLM
 
 
 class THetA_Converter:
@@ -60,15 +61,15 @@ class THetA_Converter:
 
         if "visual" == gc_correction_method:
             print "visual gc correction"
-            self._visual_gccorrection()
+            #self._visual_gccorrection()
+            self._MCMC_gccorrection()
 
-        self._load_SNP()
-        self._baseline_selection()
+        # self._load_SNP()
+        # self._baseline_selection()
 
-        if "visual" == gc_correction_method:
-            self._visual_baseline_selection()
-
-        self._output()
+        # if "visual" == gc_correction_method:
+        #    self._visual_baseline_selection()
+        # self._output()
         pass
 
     def _baseline_selection(self):
@@ -91,16 +92,19 @@ class THetA_Converter:
         blp = BaselinePlot(self.data, self.max_copynumber, self.subclone_num)
         blp.plot()
 
+    def _MCMC_gccorrection(self):
+        mcmclm = MCMCLM(self.data, 0, [10, 75], 0.15)
+        mcmclm.run()
+
     def _visual_gccorrection(self):
-        """
-        :returns: TODO
-
-        """
-
         gsp = GCStripePlot(self.data.segments, self.sampleNumber)
+        print "total number: {}".format(self.data.seg_num)
+        #gsp.sampleln([i * 1000 for i in range(1,9)], 100)
         gsp.plot()
 
         x, y, m, c = gsp.output()
+        print "x, y, m, c"
+        print x, y, m, c
 
         return x, y, m, c
 
