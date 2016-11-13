@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
 '''
 # =============================================================================
@@ -12,6 +12,7 @@
 #       History:
 # =============================================================================
 '''
+import sys
 
 import pymc
 import numpy as np
@@ -103,6 +104,32 @@ class MCMCLM(object):
 
             return slope
 
+        def get_inlier_posterior(y, x, slop, n):
+            # divide y into n groups
+            if n < 1:
+                print "n less than 1"
+                sys.exit(1)
+
+            if len(y) < n:
+                return -float("Inf")
+
+            prob = 0
+
+            slope_all = getLinalgSlope(y, x)
+
+            for i in range(1, n + 1):
+                y_up = np.percentile(y, int(i * 100.0 / n))
+                y_down = np.percentile(y, int(i - 1 * 100.0 / n))
+                y_temp = y[np.logical_and(y > y_down, y < y_up)]
+                x_temp = x[np.logical_and(y > y_down, y < y_up)]
+                slope_temp = getLinalgSlope(y_temp, x_temp)
+                prob = prob + pymc.distributions.normal_like(slope_temp,
+                                                              slope_all,
+                                                              100)
+            prob = prob +  pymc.distributions.normal_like(slope, slope_all, 100)
+
+            return prob
+
         def log_posterior_likelihood_of_outlier(
                 y_with_outlier,
                 inlier,
@@ -111,16 +138,12 @@ class MCMCLM(object):
 
             # Here requires multiple
 
-            tempSlopes = getLinalgSlope(y_with_outlier[inlier], x[inlier])
-
-
-
-            #inlier_posterior = np.log(
+            inlier_posterior = get_inlier_posterior(y_with_outlier[inlier],
+                                                    x[inlier],
+                                                    slope,
+                                                    4)
+            # inlier_posterior = np.log(
             #    1.0 / (np.sum((tempSlopes - slope) ** 2) + 1))
-
-            inlier_posterior = pymc.distributions.normal_like(tempSlopes,
-                                                                 slope,
-                                                                 100)
 
             outlier_posterior = np.log(sum(inlier)) - np.log(len(inlier))
 
