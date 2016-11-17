@@ -13,6 +13,11 @@ Modified on 2014-04-05
 '''
 import numpy as np
 
+INLIER_PROPORTION_PRIOR = 0.8
+INLIER_LEFT_MARGIN = 0.38
+
+
+
 BAF_N_MIN = 0.49
 BAF_N_MAX = 0.51
 BAF_COUNTS_MIN = 10

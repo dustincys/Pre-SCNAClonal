@@ -16,6 +16,9 @@ import sys
 
 import pymc
 import numpy as np
+from scipy.stats import gaussian_kde
+
+import constants
 
 from matplotlib import pyplot as plt
 
@@ -77,18 +80,39 @@ class MCMCLM(object):
         #        y_with_outlier < up)].std()
 ############################################################
 
-        slope = pymc.Uniform('slope', -5.0, 5.0)
-        intercept = pymc.Uniform('intercept', 0.0, 1.0)
+        def getSlopeMC(y, x):
+            x_30 = np.percentile(x, 30)
+            x_70 = np.percentile(x, 70)
+            y_up = y[x > x_70]
+            y_down = y[x < x_30]
+
+            y_up_y = np.percentile(y_up, 50)
+            x_up_x = np.percentile(x, 85)
+
+            y_down_y = np.percentile(y_down, 50)
+            x_down_x = np.percentile(x, 15)
+
+            m = (y_up_y - y_down_y) * 1.0 / (x_up_x - x_down_x)
+            c = y_down_y - m * x_down_x
+            return m, c
+        m, c = getSlopeMC(y_with_outlier, x)
+
+        slope = pymc.Uniform('slope', m-1.0, m+1.0)
+        #intercept = pymc.Uniform('intercept', c, c + 1.0)
 
         @pymc.deterministic
         def inlier(
                 slope=slope,
-                intercept=intercept,
+                #intercept=intercept,
                 y_with_outlier=y_with_outlier,
                 x=x):
 
+            intercept = 1
+            #inlier_left_margin = constants.INLIER_LEFT_MARGIN * 100
             inlier = np.empty(len(y_with_outlier), dtype=bool)
             for i in range(len(y_with_outlier)):
+                # if y_with_outlier[i] < (x[i] * slope + intercept + slope *
+                # inlier_left_margin ):
                 if y_with_outlier[i] < (x[i] * slope + intercept):
                     inlier[i] = True
                 else:
@@ -115,39 +139,79 @@ class MCMCLM(object):
 
             prob = 0
 
-            slope_all = getLinalgSlope(y, x)
-
+# tao = 1/ rho**2
             for i in range(1, n + 1):
                 y_up = np.percentile(y, int(i * 100.0 / n))
-                y_down = np.percentile(y, int(i - 1 * 100.0 / n))
+                y_down = np.percentile(y, int((i - 1) * 100.0 / n))
                 y_temp = y[np.logical_and(y > y_down, y < y_up)]
                 x_temp = x[np.logical_and(y > y_down, y < y_up)]
                 slope_temp = getLinalgSlope(y_temp, x_temp)
-                prob = prob + pymc.distributions.normal_like(slope_temp,
-                                                              slope_all,
-                                                              100)
-            prob = prob +  pymc.distributions.normal_like(slope, slope_all, 100)
+                prob = prob + 0.5 / n * pymc.distributions.normal_like(
+                                                                      slope_temp,
+                                                                      slop, 1 /
+                                                                      (8 ** 2))
+
+            slope_all = getLinalgSlope(y, x)
+
+            prob = prob + 0.5 * pymc.distributions.normal_like(slope_all, slop,
+                                                               1/(8 ** 2))
 
             return prob
+
+        def get_outlier_posterior(inlier):
+            alpha = 60
+            beta = 10
+
+            prob = pymc.distributions.beta_like(
+                sum(inlier) * 1.0 / len(inlier), alpha, beta)
+
+            return prob
+
+        def correctY(y, x, slope, intercept):
+            K = np.percentile(y, 50)
+            A = slope * x + intercept
+            return y - A + K
 
         def log_posterior_likelihood_of_outlier(
                 y_with_outlier,
                 inlier,
-                slope,
-                intercept):
+                slope
+                ):
 
             # Here requires multiple
 
-            inlier_posterior = get_inlier_posterior(y_with_outlier[inlier],
-                                                    x[inlier],
-                                                    slope,
-                                                    4)
-            # inlier_posterior = np.log(
-            #    1.0 / (np.sum((tempSlopes - slope) ** 2) + 1))
+            # inlier_posterior = get_inlier_posterior(y_with_outlier[inlier],
+            #                                        x[inlier],
+            #                                        slope,
+            #                                        2)
 
-            outlier_posterior = np.log(sum(inlier)) - np.log(len(inlier))
+            #slope_mu, C = getSlopeMC(y_with_outlier, x)
+            # intercept_posterior = pymc.distributions.normal_like(intercept, C,
+            #                                                     1.0/ (0.05
+            #                                                           **2))
+            # slope_posterior = pymc.distributions.normal_like(slope,
+            #                                                 slope_mu,
+            #                                                 1.0 / (0.05 **2))
 
-            return inlier_posterior + outlier_posterior
+            # outlier_posterior = pymc.distributions.normal_like(
+            #    sum(inlier) * 1.0 / len(inlier),
+            #    0.6,
+            #    1.0 / (0.002**2)
+            #)
+
+            y_corrected = correctY(y_with_outlier, x, slope, 0)
+            y_density = gaussian_kde(y_corrected)
+
+            y_30 = np.percentile(y_with_outlier, 30)
+            y_70 = np.percentile(y_with_outlier, 70)
+            y_xs = np.linspace(y_30, y_70, 20)
+
+            y_ys = y_density(y_xs)
+            index = np.argmax(y_ys)
+
+            prob =  y_ys[index]
+
+            return prob
 
         outlier_distribution = pymc.stochastic_from_dist(
             'outlier_distribution',
@@ -158,21 +222,18 @@ class MCMCLM(object):
         outlier_dist = outlier_distribution('outlier_dist',
                                             inlier=inlier,
                                             slope=slope,
-                                            intercept=intercept,
                                             observed=True,
                                             value=y_with_outlier)
 
         model = dict(outlier_dist=outlier_dist,
                      slope=slope,
-                     inlier=inlier,
-                     intercept=intercept
+                     inlier=inlier
                      )
 
         mcmc = pymc.MCMC(model)
-        mcmc.sample(100000, 20000)
+        mcmc.sample(10000, 2000)
 
         slope_trace = mcmc.trace('slope')[:]
-        intercept_trace = mcmc.trace('intercept')[:]
 
         inlier_trace = mcmc.trace('inlier')[:]
         probability_of_points = inlier_trace.astype(float).mean(0)
@@ -190,12 +251,12 @@ class MCMCLM(object):
         plt.ylim([0, 50])
         plt.ylabel("Slope")
 
-        ax = plt.subplot(212)
-        plt.hist(intercept_trace, histtype='stepfilled', bins=30,
-                 alpha=.7, color="#7A68A6", normed=True)
-        plt.legend(loc="upper left")
-        plt.ylim([0, 2])
-        plt.ylabel("Intercept")
+        #ax = plt.subplot(212)
+        #plt.hist(intercept_trace, histtype='stepfilled', bins=30,
+        #         alpha=.7, color="#7A68A6", normed=True)
+        #plt.legend(loc="upper left")
+        #plt.ylim([0, 2])
+        #plt.ylabel("Intercept")
 
         plt.show()
 
@@ -230,10 +291,20 @@ class MCMCLM(object):
 
         print "all sample: {}".format(len(sampledSegs))
 
-        x0 = np.array(map(lambda seg: seg.gc * 100, sampledSegs))
+        x0 = np.array(map(lambda seg: seg.gc, sampledSegs))
         y0 = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
                           np.log(seg.normal_reads_num + 1), sampledSegs))
         l = sorted(zip(y0, x0), reverse=True)
         y0, x0 = [list(t) for t in zip(*l)]
 
         return np.array(x0), np.array(y0)
+
+    def getInterceptParameters(self, y, x):
+        inlier_proportion_prior = constants.INLIER_PROPORTION_PRIOR
+        inlier_left_margin = constants.INLIER_LEFT_MARGIN * 100
+
+        y_temp = y[x < inlier_left_margin]
+        mu = np.percentile(y_temp, inlier_proportion_prior)
+        rho = np.std(y_temp)
+
+        return mu, rho
