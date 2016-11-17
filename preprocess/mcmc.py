@@ -3,16 +3,15 @@
 '''
 # =============================================================================
 #      FileName: mcmc.py
-#          Desc: The MCMC model for linear regression
+#          Desc: The PYMC model for gc correction
 #        Author: Chu Yanshuo
 #         Email: chu@yanshuo.name
 #      HomePage: http://yanshuo.name
 #       Version: 0.0.1
-#    LastChange: 2016-10-31 13:15:44
+#    LastChange: 2016-11-17 12:00:33
 #       History:
 # =============================================================================
 '''
-import sys
 
 import pymc
 import numpy as np
@@ -20,39 +19,66 @@ from scipy.stats import gaussian_kde
 
 import constants
 
-from matplotlib import pyplot as plt
-
 
 class MCMCLM(object):
 
     """The MCMC model for linear regression, return the slope and inlier"""
 
-    def __init__(self, data, n, percentile, prob_threshold):
+    def __init__(self, data, n, tau, max_copynumber):
         """Initialize the MCMCLM model
 
         :data: the segment data object
         :n: the sampling number
-        :percentile: the percentile for calculating standard
-            divation for inlier and outlier
-        :prob_threshold: the prob_threshold for determine inliner and outliner
-
+        :tau: the subclone number
+        :max_copynumber: maximum copy number
         """
         self._data = data
         self._n = n
-        self._percentile = percentile
-        self._prob_threshold = prob_threshold
+        self._tau = tau
+        self._max_copynumber = max_copynumber
 
-    def _getSlopeMC(self, y, x):
-        x_30 = np.percentile(x, 30)
-        x_70 = np.percentile(x, 70)
-        y_up = y[x > x_70]
-        y_down = y[x < x_30]
+        # parameters
+        self._downGCBoundaryPercentile = constants.DOWN_GC_BOUNDARY_PERCENTILE
+        self._upGCBoundaryPercentile = constants.UP_GC_BOUNDARY_PERCENTILE
+
+        self._downLOGABoundaryPercentile = \
+            constants.DOWN_LOGA_BOUNDARY_PERCENTILE
+        self._upLOGABoundaryPercentile = \
+            constants.UP_LOGA_BOUNDARY_PERCENTILE
+
+        self._slope_range = constants.SLOPE_RANGE
+
+    def run(self):
+        """Correct Y
+        return: the corrected Y
+        """
+        slope_best, intercept_best = self._getMCPosterior()
+
+        x = np.array(map(lambda seg: seg.gc, self._data.segments))
+        y = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
+                         np.log(seg.normal_reads_num + 1),
+                         self._data.segments))
+
+        y_corrected = self._correctY(y, x, slope_best, intercept_best)
+
+        for i in range(len(y_corrected)):
+            self._data.segments[i].tumor_reads_num = np.exp(
+                y_corrected[i] +
+                np.log(self._data.segments[i].normal_reads_num + 1)) - 1
+
+    def _getMCPrior(self, y, x):
+        x_down_ceil = np.percentile(x, self._downGCBoundaryPercentile)
+        x_up_floor = np.percentile(x, self._upGCBoundaryPercentile)
+        y_up = y[x > x_up_floor]
+        y_down = y[x < x_down_ceil]
+        x_up = x[x > x_up_floor]
+        x_down = x[x < x_down_ceil]
 
         y_up_y = np.percentile(y_up, 50)
-        x_up_x = np.percentile(x, 85)
+        x_up_x = np.percentile(x_up, 50)
 
         y_down_y = np.percentile(y_down, 50)
-        x_down_x = np.percentile(x, 15)
+        x_down_x = np.percentile(x_down, 50)
 
         m = (y_up_y - y_down_y) * 1.0 / (x_up_x - x_down_x)
         c = y_down_y - m * x_down_x
@@ -64,13 +90,10 @@ class MCMCLM(object):
         A = slope * x + intercept
         return y - A + K
 
-    def run(self):
-        x, y_with_outlier = self._getSampledData()
-        m, c = self._getSlopeMC(y_with_outlier, x)
-        print "____>>> getSlopeMC: m, c____"
-        print m, c
-        print "_________end getSlopeMC:m, c______________"
-        slope = pymc.Uniform('slope', m-5.0, m+5.0)
+    def _getMCPosterior(self):
+        y_with_outlier, x = self._getSampledData()
+        m, c = self._getMCPrior(y_with_outlier, x)
+        slope = pymc.Uniform('slope', m-self._slope_range, m+self._slope_range)
 
         def log_posterior_likelihood_of_slope(
                 y_with_outlier,
@@ -79,9 +102,11 @@ class MCMCLM(object):
             y_corrected = self._correctY(y_with_outlier, x, slope, 0)
             y_density = gaussian_kde(y_corrected)
 
-            y_30 = np.percentile(y_with_outlier, 30)
-            y_70 = np.percentile(y_with_outlier, 70)
-            y_xs = np.linspace(y_30, y_70, 20)
+            y_down = np.percentile(y_with_outlier,
+                                   self._downLOGABoundaryPercentile)
+            y_up = np.percentile(y_with_outlier,
+                                 self._upLOGABoundaryPercentile)
+            y_xs = np.linspace(y_down, y_up, 10000*self._tau*self._max_copynumber)
 
             y_ys = y_density(y_xs)
             index = np.argmax(y_ys)
@@ -97,9 +122,9 @@ class MCMCLM(object):
             mv=True)
 
         slope_dist = slope_distribution('slope_dist',
-                                            slope=slope,
-                                            observed=True,
-                                            value=y_with_outlier)
+                                        slope=slope,
+                                        observed=True,
+                                        value=y_with_outlier)
 
         model = dict(slope_dist=slope_dist,
                      slope=slope
@@ -107,8 +132,13 @@ class MCMCLM(object):
 
         M = pymc.MAP(model)
         M.fit()
-        print "M.slope.value = {}".format(M.slope.value)
 
+        slope_best = M.slope.value
+        y_median = np.percentile(y_with_outlier, 50)
+        x_median = x[sum(y_with_outlier < y_median)]
+        intercept_best = y_median - slope_best * x_median
+
+        return slope_best, intercept_best
 
     def _getSampledData(self):
         if 0 == self._n:
@@ -124,14 +154,4 @@ class MCMCLM(object):
         l = sorted(zip(y0, x0), reverse=True)
         y0, x0 = [list(t) for t in zip(*l)]
 
-        return np.array(x0), np.array(y0)
-
-    def getInterceptParameters(self, y, x):
-        inlier_proportion_prior = constants.INLIER_PROPORTION_PRIOR
-        inlier_left_margin = constants.INLIER_LEFT_MARGIN * 100
-
-        y_temp = y[x < inlier_left_margin]
-        mu = np.percentile(y_temp, inlier_proportion_prior)
-        rho = np.std(y_temp)
-
-        return mu, rho
+        return np.array(y0), np.array(x0)

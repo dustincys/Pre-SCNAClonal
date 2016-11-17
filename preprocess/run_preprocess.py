@@ -11,10 +11,12 @@
 # =============================================================================
 '''
 
+import sys
 from BamToDataConverter import MixClone_Converter
 from BICseqSNPToDataConverter import THetA_Converter
 
 import time
+
 
 def run_preprocess_THetA(args):
     print "THetA running"
@@ -39,6 +41,7 @@ def run_preprocess_THetA(args):
 
     print 'Run time: {0:.2f} seconds'.format(time_end - time_start)
     sys.stdout.flush()
+
 
 def run_preprocess_MixClone(args):
     '''

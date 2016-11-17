@@ -53,15 +53,15 @@ class THetA_Converter:
         gc_correction_method, baseline_selection_method = methods
 
         print "THetA converter converting"
-        if "auto" == gc_correction_method:
-            print "auto gc correction"
-            self._gccorrection()
+#        if "auto" == gc_correction_method:
+#            print "auto gc correction"
+#            self._gccorrection()
 
         self._load_segments()
 
         if "visual" == gc_correction_method:
             print "visual gc correction"
-            #self._visual_gccorrection()
+            self._visual_gccorrection()
             self._MCMC_gccorrection()
 
         # self._load_SNP()
@@ -93,13 +93,16 @@ class THetA_Converter:
         blp.plot()
 
     def _MCMC_gccorrection(self):
-        mcmclm = MCMCLM(self.data, 0, [10, 75], 0.15)
+        """
+        The interception is irrelevant for correction, set as median
+        """
+        mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         mcmclm.run()
 
     def _visual_gccorrection(self):
         gsp = GCStripePlot(self.data.segments, self.sampleNumber)
         print "total number: {}".format(self.data.seg_num)
-        #gsp.sampleln([i * 1000 for i in range(1,9)], 100)
+#        gsp.sampleln([i * 1000 for i in range(1,9)], 100)
         gsp.plot()
 
         x, y, m, c = gsp.output()
