@@ -45,28 +45,75 @@ class MixClone_Converter:
         self.data = Data()
 
     def convert(self, methods):
+        self._load_segments()
 
+        print "MixClone converter converting"
         gc_correction_method, baseline_selection_method = methods
 
         if "auto" == gc_correction_method:
-            self._gccorrection()
-
-        self._load_segments()
-
-        if "visual" == gc_correction_method:
+            print "auto gc correction"
+            self._MCMC_gccorrection()
+        elif "visual" == gc_correction_method:
+            print "visual gc correction"
             self._visual_gccorrection()
 
         self._get_counts()
         self._baseline_selection()
-
-        if "visual" == gc_correction_method:
-            self._visual_baseline_selection()
 
         data_file_name = self.input_filename_base + '.MixClone.input.pkl'
         outfile = open(data_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
 
         outfile.close()
+
+    def _MCMC_gccorrection(self):
+        """
+        The interception is irrelevant for correction, set as median
+        MCMCLM only returns the m and c, then correct the data here
+        """
+        mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
+        m, c = mcmclm.run()
+        self._correct(m, c)
+
+
+    def _correct(self, slope, intercept):
+
+        x = np.array(map(lambda seg: seg.gc, self.data.segments))
+        y = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
+                         np.log(seg.normal_reads_num + 1),
+                         self.data.segments))
+
+        K = np.percentile(y, 50)
+        A = slope * x + intercept
+        y_corrected = y - A + K
+
+        for i in range(len(y_corrected)):
+            self.data.segments[i].tumor_reads_num = np.exp(
+                y_corrected[i] +
+                np.log(self.data.segments[i].normal_reads_num + 1)
+            ) - 1
+
+        print "gc corrected, with slope = {0}, intercept = {1}".\
+            format(slope, intercept)
+
+
+    def _visual_gccorrection(self):
+        gsp = GCStripePlot(self.data.segments, self.sampleNumber)
+        print "total number: {}".format(self.data.seg_num)
+
+#       Sampling then linear regression, poor performance
+#       gsp.sampleln([i * 1000 for i in range(1,9)], 100)
+
+        gsp.plot()
+
+#todo   trimed x, y position
+        x, y, m, c = gsp.output()
+
+        print "x, y, m, c"
+        print x, y, m, c
+
+        self._correct(m,c)
+
 
     def _baseline_selection(self):
         self._get_LOH_frac()

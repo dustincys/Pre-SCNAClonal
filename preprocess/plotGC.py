@@ -37,7 +37,7 @@ class GCStripePlot():
         self.segments = segments
         self.n = n
 
-#        parameters for plot
+#       parameters for plot
         self.m0 = 0
         self.c0 = 0
         self.alpha0 = 0.02
@@ -57,9 +57,6 @@ class GCStripePlot():
 
         self.colorin = colorConverter.to_rgba('red', self.alpha0)
         self.colorout = colorConverter.to_rgba('blue', self.alpha0)
-
-    def test():
-        return 1
 
     def output(self):
         """

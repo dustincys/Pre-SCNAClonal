@@ -54,17 +54,7 @@ class MCMCLM(object):
         """
         slope_best, intercept_best = self._getMCPosterior()
 
-        x = np.array(map(lambda seg: seg.gc, self._data.segments))
-        y = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
-                         np.log(seg.normal_reads_num + 1),
-                         self._data.segments))
-
-        y_corrected = self._correctY(y, x, slope_best, intercept_best)
-
-        for i in range(len(y_corrected)):
-            self._data.segments[i].tumor_reads_num = np.exp(
-                y_corrected[i] +
-                np.log(self._data.segments[i].normal_reads_num + 1)) - 1
+        return slope_best, intercept_best
 
     def _getMCPrior(self, y, x):
         x_down_ceil = np.percentile(x, self._downGCBoundaryPercentile)

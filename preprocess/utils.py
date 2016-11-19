@@ -11,9 +11,10 @@ Modified on 2014-04-09
 
 @author: Yi Li
 '''
+
 import sys
 import numpy as np
-from scipy.stats import binom
+from scipy.stats import binom, beta
 
 import rpy2.robjects as ro
 

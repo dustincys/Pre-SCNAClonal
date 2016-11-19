@@ -11,6 +11,8 @@
 # =============================================================================
 '''
 
+import sys
+
 from plotGC import GCStripePlot
 from plotBaseline import BaselinePlot
 
@@ -50,26 +52,26 @@ class THetA_Converter:
         :returns: BICseq bed file, gc corrected, and relevant parameters
 
         """
-        gc_correction_method, baseline_selection_method = methods
-
-        print "THetA converter converting"
-#        if "auto" == gc_correction_method:
-#            print "auto gc correction"
-#            self._gccorrection()
-
         self._load_segments()
 
-        if "visual" == gc_correction_method:
+        print "THetA converter converting"
+        gc_correction_method, baseline_selection_method = methods
+
+        if "auto" == gc_correction_method:
+            print "auto gc correction"
+            self._MCMC_gccorrection()
+        elif "visual" == gc_correction_method:
             print "visual gc correction"
             self._visual_gccorrection()
-            self._MCMC_gccorrection()
 
-        # self._load_SNP()
-        # self._baseline_selection()
+        self._load_SNP()
+        self._baseline_selection()
 
-        # if "visual" == gc_correction_method:
-        #    self._visual_baseline_selection()
-        # self._output()
+# baseline visual selection, not meaningful, if the baseline segments are not
+# obviously located
+#        if "visual" == gc_correction_method:
+#            self._visual_baseline_selection()
+        self._output()
         pass
 
     def _baseline_selection(self):
@@ -95,34 +97,51 @@ class THetA_Converter:
     def _MCMC_gccorrection(self):
         """
         The interception is irrelevant for correction, set as median
+        MCMCLM only returns the m and c, then correct the data here
         """
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
-        mcmclm.run()
+        m, c = mcmclm.run()
+        self._correct(m, c)
+
+
+    def _correct(self, slope, intercept):
+
+        x = np.array(map(lambda seg: seg.gc, self.data.segments))
+        y = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
+                         np.log(seg.normal_reads_num + 1),
+                         self.data.segments))
+
+        K = np.percentile(y, 50)
+        A = slope * x + intercept
+        y_corrected = y - A + K
+
+        for i in range(len(y_corrected)):
+            self.data.segments[i].tumor_reads_num = np.exp(
+                y_corrected[i] +
+                np.log(self.data.segments[i].normal_reads_num + 1)
+            ) - 1
+
+        print "gc corrected, with slope = {0}, intercept = {1}".\
+            format(slope, intercept)
+
 
     def _visual_gccorrection(self):
         gsp = GCStripePlot(self.data.segments, self.sampleNumber)
         print "total number: {}".format(self.data.seg_num)
-#        gsp.sampleln([i * 1000 for i in range(1,9)], 100)
+
+#       Sampling then linear regression, poor performance
+#       gsp.sampleln([i * 1000 for i in range(1,9)], 100)
+
         gsp.plot()
 
+#todo   trimed x, y position
         x, y, m, c = gsp.output()
+
         print "x, y, m, c"
         print x, y, m, c
 
-        return x, y, m, c
+        self._correct(m,c)
 
-    def _gccorrection(self):
-        gc_corrected_BICseq_bed_fileName = self.BICseq_bed_fileName + ".temp"
-        args = (self.BICseq_bed_fileName,
-                gc_corrected_BICseq_bed_fileName,
-                self.seg_length,
-                self.max_copynumber,
-                self.subclone_num,
-                self.lm_lowerbound,
-                self.lm_upperbound,
-                self.delta)
-        gccorrect(args)
-        self.BICseq_bed_fileName = gc_corrected_BICseq_bed_fileName
 
     def _output(self):
         """Output the parameter for THetA
@@ -135,12 +154,8 @@ class THetA_Converter:
         sys.stdout.flush()
 
     def _load_segments(self):
-        """
-        :returns: TODO
-
-        """
-
-        print 'Loading normalized segments by {0}...'.format(self.BICseq_bed_fileName)
+        print 'Loading normalized segments by {0}...'.\
+            format(self.BICseq_bed_fileName)
         self.data.load_segmentsn(self.BICseq_bed_fileName)
 
     def _load_SNP(self):
