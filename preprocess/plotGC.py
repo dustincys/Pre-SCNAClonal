@@ -22,62 +22,6 @@ from matplotlib.colors import colorConverter
 import numpy as np
 
 
-class SelectFromCollection(object):
-    """Select indices from a matplotlib collection using `LassoSelector`.
-
-    Selected indices are saved in the `ind` attribute. This tool highlights
-    selected points by fading them out (i.e., reducing their alpha values).
-    If your collection has alpha < 1, this tool will permanently alter them.
-
-    Note that this tool selects collection objects based on their *origins*
-    (i.e., `offsets`).
-
-    Parameters
-    ----------
-    ax : :class:`~matplotlib.axes.Axes`
-        Axes to interact with.
-
-    collection : :class:`matplotlib.collections.Collection` subclass
-        Collection you want to select from.
-
-    alpha_other : 0 <= float <= 1
-        To highlight a selection, this tool sets all selected points to an
-        alpha value of 1 and non-selected points to `alpha_other`.
-    """
-
-    def __init__(self, ax, collection, alpha_other=0.001):
-        self.canvas = ax.figure.canvas
-        self.collection = collection
-        self.alpha_other = alpha_other
-
-        self.xys = collection.get_offsets()
-        self.Npts = len(self.xys)
-
-        # Ensure that we have separate colors for each object
-        self.fc = collection.get_facecolors()
-        if len(self.fc) == 0:
-            raise ValueError('Collection must have a facecolor')
-        elif len(self.fc) == 1:
-            self.fc = np.tile(self.fc, self.Npts).reshape(self.Npts, -1)
-
-        self.lasso = LassoSelector(ax, onselect=self.onselect)
-        self.ind = []
-
-    def onselect(self, verts):
-        path = Path(verts)
-        self.ind = np.nonzero([path.contains_point(xy) for xy in self.xys])[0]
-        self.fc[:, -1] = self.alpha_other
-        self.fc[self.ind, -1] = 0.2
-        self.collection.set_facecolors(self.fc)
-        self.canvas.draw_idle()
-
-    def disconnect(self):
-        self.lasso.disconnect_events()
-        self.fc[:, -1] = 0.5
-        self.collection.set_facecolors(self.fc)
-        self.canvas.draw_idle()
-
-
 class GCStripePlot():
 
     """plot the gc stripe and interactively adjust the lm line"""
@@ -93,7 +37,7 @@ class GCStripePlot():
         self.segments = segments
         self.n = n
 
-        # parameters for plot
+#        parameters for plot
         self.m0 = 0
         self.c0 = 0
         self.alpha0 = 0.02
@@ -110,13 +54,12 @@ class GCStripePlot():
 
         self.x = None
         self.y = None
-        self.xlim_up = 0
-        self.xlim_dowm = 0
-        self.ylim_up = 0
-        self.ylim_dowm = 0
 
         self.colorin = colorConverter.to_rgba('red', self.alpha0)
         self.colorout = colorConverter.to_rgba('blue', self.alpha0)
+
+    def test():
+        return 1
 
     def output(self):
         """
@@ -136,6 +79,12 @@ class GCStripePlot():
         self.m = np.tan(np.arctan(self.m1) + mt)
 
     def _updateC(self, ct):
+        """
+
+        :ct: TODO
+        :returns: TODO
+
+        """
         self.c = self.c1 + ct
 
     def sampleln(self, n_list, m):
@@ -161,6 +110,7 @@ class GCStripePlot():
         print "finished sampling"
 
     def plot(self):
+
         sampledSegs = np.random.choice(self.segments, self.n)
         x0 = np.array(map(lambda seg: seg.gc, sampledSegs))
         y0 = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
@@ -168,67 +118,41 @@ class GCStripePlot():
 
         self.x = x0
         self.y = y0
-        self.xlim_up = max(x0)
-        self.xlim_down = min(x0)
-        self.ylim_up = max(y0)
-        self.ylim_down = min(y0)
 
         fig, ax = plt.subplots()
 
         pts = ax.scatter(x0, y0, s=self.area0, alpha=self.alpha0, color="b")
-        plt.subplots_adjust(bottom=0.5)
+        plt.subplots_adjust(bottom=0.35)
 
         A = np.vstack([x0, np.ones(len(x0))]).T
         self.m0, self.c0 = np.linalg.lstsq(A, y0)[0]
         self.m1, self.c1 = self.m0, self.c0
+        self.m, self.c = self.m0, self.c0
 
         xseq = np.arange(min(x0), max(x0), (max(x0) - min(x0))/100.0)
         fl, = ax.plot(xseq, self.m0*xseq + self.c0, 'r', label='Fitted line')
         hl = ax.axhline(y=np.median(y0), linewidth=1, color='black')
+        vl = ax.axvline(x=np.median(x0), linewidth=1, color='black')
 
         axcolor = 'lightgoldenrodyellow'
         axm = plt.axes([0.25, 0.1, 0.65, 0.03], axisbg=axcolor)
         axc = plt.axes([0.25, 0.15, 0.65, 0.03], axisbg=axcolor)
         axalpha = plt.axes([0.25, 0.2, 0.65, 0.03], axisbg=axcolor)
         axarea = plt.axes([0.25, 0.25, 0.65, 0.03], axisbg=axcolor)
-        axxlim_up = plt.axes([0.25, 0.3, 0.2, 0.03], axisbg=axcolor)
-        axxlim_down = plt.axes([0.65, 0.3, 0.2, 0.03], axisbg=axcolor)
-        axylim_up = plt.axes([0.25, 0.35, 0.2, 0.03], axisbg=axcolor)
-        axylim_down = plt.axes([0.65, 0.35, 0.2, 0.03], axisbg=axcolor)
 
         sm = Slider(axm, 'slope', -np.pi/4, np.pi/4, valinit=0)
         sc = Slider(axc, 'interception', -(max(self.y) - min(self.y)) / 4,
                     (max(self.y) - min(self.y)) / 4, valinit=0)
         salpha = Slider(axalpha, 'alpha', 0, 0.8, valinit=self.alpha0)
         sarea = Slider(axarea, 'area', 1, 50, valinit=self.area0)
-        sxlim_up = Slider(axxlim_up, 'xlim_up', min(self.x), max(self.x),
-                       valinit=self.xlim_up)
-        sxlim_down = Slider(axxlim_down, 'xlim_down', min(self.x), max(self.x),
-                       valinit=self.xlim_down)
-        sylim_up = Slider(axylim_up, 'ylim_up', min(self.y), max(self.y),
-                       valinit=self.ylim_up)
-        sylim_down = Slider(axylim_down, 'ylim_down', min(self.y), max(self.y),
-                        valinit=self.ylim_down)
-
-        def update_xlim(val):
-            if sxlim_up.val > sxlim_down.val:
-                pts.xlim([sxlim_up.val, sxlim_down.val])
-            fig.canvas.draw_idle()
-
-        sxlim_up.on_changed(update_xlim)
-        sxlim_down.on_changed(update_xlim)
-
-        def update_ylim(val):
-            if sylim_up.val > sylim_down.val:
-                pts.ylim([sylim_up.val, sylim_down.val])
-            fig.canvas.draw_idle()
-
-        sylim_up.on_changed(update_ylim)
-        sylim_down.on_changed(update_ylim)
 
         def update_m(val):
-            y_axis = np.median(self.y)
-            x_axis = (y_axis - self.c) / self.m
+            """
+            :returns: TODO
+
+            """
+            x_axis = np.median(self.x)
+            y_axis = x_axis * self.m + self.c
             self._updateM(sm.val)
             self.c = y_axis - self.m * x_axis
             fl.set_ydata(self.m*xseq + self.c)
