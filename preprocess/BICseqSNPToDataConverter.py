@@ -13,6 +13,8 @@
 
 import sys
 
+import numpy as np
+
 from plotGC import GCStripePlot
 from plotBaseline import BaselinePlot
 
@@ -25,15 +27,16 @@ class THetA_Converter:
 
     """Docstring for BICseqSNPToDataConverter. """
 
-    def __init__(self, BICseq_bed_fileName, tumor_SNP_fileName,
-                 normal_SNP_fileName, seg_length, max_copynumber,
-                 subclone_num, sampleNumber, lm_lowerbound, lm_upperbound,
-                 delta):
+    def __init__(self, BICseq_bed_fileName, BICseq_bed_fileName_corrected,
+                 tumor_SNP_fileName, normal_SNP_fileName, seg_length,
+                 max_copynumber, subclone_num, sampleNumber, lm_lowerbound,
+                 lm_upperbound, delta):
         """
             BICseq_bed_fileName: bicseq file name
         """
 
         self.BICseq_bed_fileName = BICseq_bed_fileName
+        self.BICseq_bed_fileName_corrected = BICseq_bed_fileName_corrected
         self.tumor_SNP_fileName = tumor_SNP_fileName
         self.normal_SNP_fileName = normal_SNP_fileName
 
@@ -103,7 +106,6 @@ class THetA_Converter:
         m, c = mcmclm.run()
         self._correct(m, c)
 
-
     def _correct(self, slope, intercept):
 
         x = np.array(map(lambda seg: seg.gc, self.data.segments))
@@ -124,7 +126,6 @@ class THetA_Converter:
         print "gc corrected, with slope = {0}, intercept = {1}".\
             format(slope, intercept)
 
-
     def _visual_gccorrection(self):
         gsp = GCStripePlot(self.data.segments, self.sampleNumber)
         print "total number: {}".format(self.data.seg_num)
@@ -134,27 +135,49 @@ class THetA_Converter:
 
         gsp.plot()
 
-#todo   trimed x, y position
+# todo   trimed x, y position
         x, y, m, c = gsp.output()
 
         print "x, y, m, c"
         print x, y, m, c
 
-        self._correct(m,c)
-
+        self._correct(m, c)
 
     def _output(self):
         """Output the parameter for THetA
 
         The Upper and Lower Boundaries for normal heuristic
+        The GC corrected interval_count_file
         """
         upper_bound, lower_bound = self.data.compute_normal_boundary()
         print "upper_bound = {0}\n lower_bound = {1}".format(upper_bound,
                                                              lower_bound)
         sys.stdout.flush()
 
+        interval_count_file = open(self.BICseq_bed_fileName_corrected, 'w')
+        interval_count_file.write(
+            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\n")
+
+        for i in range(len(self.data.segments)):
+            ID_i = self.data.segments[i].chrom_idx
+            chrm_i = self.data.segments[i].chrom_name
+            start_i = self.data.segments[i].start
+            end_i = self.data.segments[i].end
+            tumorCount_i = self.data.segments[i].tumor_reads_num
+            normalCount_i = self.data.segments[i].normal_reads_num
+            interval_count_file.write(
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(ID_i, chrm_i, start_i,
+                                                        end_i, tumorCount_i,
+                                                        normalCount_i)
+            )
+
+        interval_count_file.close()
+
+        print "GC corrected interval file generated!"
+        sys.stdout.flush()
+
     def _load_segments(self):
-        print 'Loading normalized segments by {0}...'.\
+        print 'Loading normalized segments by {0}...'.
             format(self.BICseq_bed_fileName)
         self.data.load_segmentsn(self.BICseq_bed_fileName)
 
@@ -163,8 +186,8 @@ class THetA_Converter:
         :returns: TODO
 
         """
-        tumorData = read_snp_file(self.tumor_SNP_fileName)
-        normalData = read_snp_file(self.normal_SNP_fileName)
+        tumorData=read_snp_file(self.tumor_SNP_fileName)
+        normalData=read_snp_file(self.normal_SNP_fileName)
 
         # generate the paired_counts and BAF_counts from snp
         self.data.load_counts_fromSNP(tumorData, normalData)
