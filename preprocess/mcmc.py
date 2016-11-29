@@ -18,6 +18,7 @@ import numpy as np
 from scipy.stats import gaussian_kde
 
 import constants
+from scipy.signal import argrelextrema
 
 
 class MCMCLM(object):
@@ -58,11 +59,13 @@ class MCMCLM(object):
 
     def _getMCPrior(self, y, x):
         x_down_ceil = np.percentile(x, self._downGCBoundaryPercentile)
+        x_median = np.percentile(x, 50)
         x_up_floor = np.percentile(x, self._upGCBoundaryPercentile)
-        y_up = y[x > x_up_floor]
-        y_down = y[x < x_down_ceil]
-        x_up = x[x > x_up_floor]
-        x_down = x[x < x_down_ceil]
+
+        y_up = y[np.logical_and(x < x_up_floor, x > x_median)]
+        y_down = y[np.logical_and(x > x_down_ceil, x < x_median)]
+        x_up = x[np.logical_and(x < x_up_floor, x > x_median)]
+        x_down = x[np.logical_and(x > x_down_ceil, x < x_median)]
 
         y_up_y = np.percentile(y_up, 50)
         x_up_x = np.percentile(x_up, 50)
@@ -92,16 +95,15 @@ class MCMCLM(object):
             y_corrected = self._correctY(y_with_outlier, x, slope, 0)
             y_density = gaussian_kde(y_corrected)
 
-            y_down = np.percentile(y_with_outlier,
-                                   self._downLOGABoundaryPercentile)
-            y_up = np.percentile(y_with_outlier,
-                                 self._upLOGABoundaryPercentile)
-            y_xs = np.linspace(y_down, y_up, 10000*self._tau*self._max_copynumber)
-
+            y_down = min(y_corrected)
+            y_up = max(y_corrected)
+            y_xs = np.linspace(y_down, y_up,
+                               1000*self._tau*self._max_copynumber)
             y_ys = y_density(y_xs)
+            peaks = argrelextrema(y_ys, np.greater)
             index = np.argmax(y_ys)
 
-            prob = y_ys[index]
+            prob = y_ys[index] * len(peaks[0])
 
             return prob
 
