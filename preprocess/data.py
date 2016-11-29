@@ -200,9 +200,14 @@ class Data:
         :returns: TODO
 
         """
+
+        gamma = constants.GAMMA
+        numProcesses = constants.NUMPROCESSES
+        tumorData_nhetero, normalData_nhetero = filter_normal_heterozygous(
+            tumorData, normalData, gamma, numProcesses)
         for j in range(0, len(self.segments)):
             normalData_temp, tumorData_temp = get_row_by_segment(
-                tumorData, normalData, self.segments[j])
+                tumorData_nhetero, normalData_nhetero, self.segments[j])
             paired_counts_temp = get_paired_counts(
                 normalData_temp, tumorData_temp)
             self.segments[j].paired_counts = paired_counts_temp
@@ -268,7 +273,7 @@ class Data:
         reads_depth_ratio = np.array(reads_depth_ratio)
         reads_depth_ratio_log = np.array(reads_depth_ratio_log)
         if reads_depth_ratio_log.shape[0] == 0:
-            print 'Error: APM position found, existing...'
+            print 'Error: no APM position found, existing...'
             sys.exit(1)
 
         reads_depth_ratio_log = reads_depth_ratio_log.reshape(

@@ -30,7 +30,7 @@ class THetA_Converter:
     def __init__(self, BICseq_bed_fileName, BICseq_bed_fileName_corrected,
                  tumor_SNP_fileName, normal_SNP_fileName, seg_length,
                  max_copynumber, subclone_num, sampleNumber, lm_lowerbound,
-                 lm_upperbound, delta):
+                 lm_upperbound, delta, baseline_thred_LOH, baseline_thred_APM):
         """
             BICseq_bed_fileName: bicseq file name
         """
@@ -48,6 +48,9 @@ class THetA_Converter:
         self.lm_upperbound = lm_upperbound
         self.delta = delta
 
+        self.baseline_thred_LOH = baseline_thred_LOH
+        self.baseline_thred_APM = baseline_thred_APM
+
         self.data = Data()
 
     def convert(self, methods):
@@ -63,18 +66,20 @@ class THetA_Converter:
         if "auto" == gc_correction_method:
             print "auto gc correction"
             self._MCMC_gccorrection()
+            self._visual_gccorrection()
         elif "visual" == gc_correction_method:
             print "visual gc correction"
+            self._MCMC_gccorrection()
             self._visual_gccorrection()
 
-        self._load_SNP()
-        self._baseline_selection()
+#        self._load_SNP()
+#        self._baseline_selection()
 
 # baseline visual selection, not meaningful, if the baseline segments are not
 # obviously located
 #        if "visual" == gc_correction_method:
 #            self._visual_baseline_selection()
-        self._output()
+#        self._output()
         pass
 
     def _baseline_selection(self):
@@ -177,7 +182,7 @@ class THetA_Converter:
         sys.stdout.flush()
 
     def _load_segments(self):
-        print 'Loading normalized segments by {0}...'.
+        print 'Loading normalized segments by {0}...'.\
             format(self.BICseq_bed_fileName)
         self.data.load_segmentsn(self.BICseq_bed_fileName)
 

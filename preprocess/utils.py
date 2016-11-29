@@ -16,8 +16,6 @@ import sys
 import numpy as np
 from scipy.stats import binom, beta
 
-import rpy2.robjects as ro
-
 from multiprocessing import Pool
 
 import constants
@@ -329,109 +327,6 @@ def remove_outliers(X):
         return remove_outliers(X)
 
 
-def gccorrect(args):
-    """regression, theta, alpha, beta
-
-    :args: TODO
-    :returns: TODO
-
-    BICseq_bed format:  chrom start end sampleReads referenceReads gc
-
-    originalFileName = "./getGCMap/HCC1954.mix1.n40t60.bam.bicseq.gcmap.txt"
-    filteredFileName = "HCC1954.mix1.n40t60.bam.bicseq.GCcorrected.clustered.txt"
-    library(CNAnorm)
-
-
-    seg_length = 10000
-    copyNumbers = 11
-    subcloneNumbers = 1
-
-    lm_lowerbound = -0.5
-    lm_upperbound = 0.5
-
-    delta = 0.1
-
-    """
-    BICseq_bed_fileName, gc_corrected_BICseq_bed_fileName, seg_length, max_copy_number, subclone_num,
-    lm_lowerbound, lm_upperbound, alpha, delta = args
-
-    BICseq_bed_r = 'BICseq_bed_fileName = "{}"'.format(BICseq_bed_fileName)
-    gc_corrected_BICseq_bed_r = 'gc_corrected_BICseq_bed_fileName = "{}"'.format(
-        gc_corrected_BICseq_bed_fileName)
-    seg_length_r = 'seg_length = {}'.format(seg_length)
-    max_copy_number_r = 'max_copy_number = {}'.format(max_copy_number)
-    subclone_num_r = 'subclone_num = {}'.format(subclone_num)
-
-    lm_lowerbound_r = 'lm_lowerbound = {}'.format(lm_lowerbound)
-    lm_upperbound_r = 'lm_upperbound = {}'.format(lm_upperbound)
-
-    alpha_r = 'alpha = {}'.format(alpha)
-
-    ro.r(BICseq_bed_r)
-    ro.r(gc_corrected_BICseq_bed_r)
-    ro.r(seg_length_r)
-    ro.r(max_copy_number_r)
-    ro.r(subclone_num_r)
-    ro.r(alpha_r)
-
-    ro.r("""
-
-         bicseq_data = read.table(BICseq_bed_fileName, header = T)
-
-
-         ########## gc correction ###########
-         bicseq_data$loga = log(bicseq_data$sampleReads + 1) - log(bicseq_data$referenceReads + 1)
-         temp = bicseq_data[bicseq_data$loga < lm_upperbound & bicseq_data$loga
-         > lm_lowerbound,]
-         loga_gc_lm = lm(temp$loga ~ temp$gc)
-         getA <-function(x){
-            loga_gc_lm$coefficients[[2]] * x + loga_gc_lm$coefficients[[1]]
-         }
-
-         k = median(bicseq_data$loga)
-         A = getA(bicseq_data$gc)
-
-         bicseq_data$logan = bicseq_data$loga - A + k
-
-         bicseq_data$sampleReadsn = exp(bicseq_data$logan) * (bicseq_data$referenceReads + 1) - 1
-         bicseq_data$sampleReadsn = round(bicseq_data$sampleReadsn)
-
-
-#         ########### hierarchy cluster ###########
-#         bicseq_data$cluster =-1
-#         bicseq_data_trimed = bicseq_data[ bicseq_data$len > seg_length & bicseq_data$loga < lm_upperbound & bicseq_data$loga > lm_lowerbound, ]
-#         temprs = kmeans(bicseq_data_trimed$logan, centers = max_copy_number * subclone_num , nstart=20 * max_copy_number * subclone_num)
-#         bicseq_data_trimed$cluster = as.character(temprs$cluster)
-#
-#         bicseq_data_trimed$distant = 0
-#         bicseq_data_trimed$isFiltered = FALSE
-#
-#         for(i in 1:(copyNumbers * subcloneNumbers)){
-#            bicseq_data_trimed[bicseq_data_trimed$cluster == i,]$distant = abs(bicseq_data_trimed[bicseq_data_trimed$cluster == i,]$logan - temprs$centers[i])
-#
-#            maxDistant = max(bicseq_data_trimed[bicseq_data_trimed$cluster ==
-#            i,]$distant)
-#
-#            bicseq_data_trimed[bicseq_data_trimed$cluster == i,]$isFiltered =
-#            bicseq_data_trimed[bicseq_data_trimed$cluster == i,]$distant   <
-#            delta * maxDistant
-#         }
-
-         library(ggplot2)
-         pdf("gccorrection.pdf", width=10, height=8)
-         g <- ggplot(data = bicseq_data)
-         g <- g + geom_point(aes( x = gc, y = logan), alpha=alpha, size=3)
-         g + ylim(lm_lowerbound, lm_upperbound)
-         dev.off()
-
-         dataFiltered = BICseq_data[,c("chrom", "start", "end", "sampleReadsn",
-    "referenceReads") ]
-         write.table(dataFiltered, file = gc_corrected_BICseq_bed_fileName, sep = "\t", col.names = T,
-    row.names = F)
-
-         """)
-
-
 def calculate_BAF(
     tumorData,
     normalData,
@@ -628,11 +523,6 @@ def get_row_by_segment(tumorData, normalData, segment):
     :returns: TODO
 
     """
-    gamma = constants.GAMMA
-    numProcesses = constants.NUMPROCESSES
-    tumorData, normalData = filter_normal_heterozygous(
-        tumorData, normalData, gamma, numProcesses)
-
     tumorData_temp = filter(lambda item: item[0] == int(segment.chrom_name)
                             and (item[1] >= segment.start and item <=
                                  segment.end), tumorData)
