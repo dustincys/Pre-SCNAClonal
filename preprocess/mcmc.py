@@ -49,11 +49,28 @@ class MCMCLM(object):
 
         self._slope_range = constants.SLOPE_RANGE
 
+        self._zoom_p = constants.ZOOM_P
+        self._x_zoom_in_factor = constants.X_ZOOM_IN_FACTOR
+
+        self._y, self._x = self._getSampledData()
+        self._x_zoommed = self._zoomx()
+        if self._x_zoommed:
+            self._x = self._x * self._x_zoom_in_factor
+
+    def _zoomx(self):
+        spanp = (max(self._y) - min(self._y)) / (max(self._x) - min(self._x))
+        if spanp > self._zoom_p:
+            return True
+        else:
+            return False
+
     def run(self):
         """Correct Y
         return: the corrected Y
         """
-        slope_best, intercept_best = self._getMCPosterior()
+        slope_best, intercept_best = self._getMCPosterior(self._y, self._x)
+        if self._x_zoommed:
+            slope_best = slope_best * self._x_zoom_in_factor
 
         return slope_best, intercept_best
 
@@ -83,8 +100,7 @@ class MCMCLM(object):
         A = slope * x + intercept
         return y - A + K
 
-    def _getMCPosterior(self):
-        y_with_outlier, x = self._getSampledData()
+    def _getMCPosterior(self, y_with_outlier, x):
         m, c = self._getMCPrior(y_with_outlier, x)
         slope = pymc.Uniform('slope', m-self._slope_range, m+self._slope_range)
 
