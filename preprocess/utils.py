@@ -151,7 +151,6 @@ def get_segment_name(chrom_name, start, end):
 
 
 def normal_heterozygous_filter(counts):
-    BAF_N_MAX = constants.BAF_N_MAX
     BAF_N_MIN = constants.BAF_N_MIN
 
     I = counts.shape[0]
@@ -163,7 +162,7 @@ def normal_heterozygous_filter(counts):
         d_N = a_N + b_N
         BAF_N = b_N/d_N
 
-        if BAF_N >= BAF_N_MIN and BAF_N <= BAF_N_MAX:
+        if BAF_N >= BAF_N_MIN and BAF_N <= 0.5:
             idx_keep.append(i)
 
     counts = counts[idx_keep]
@@ -200,7 +199,6 @@ def get_APM_frac_MAXMIN(counts):
     sites_num_min = constants.SITES_NUM_MIN
 
     APM_N_MIN = constants.APM_N_MIN
-    APM_N_MAX = constants.APM_N_MAX
 
     if I < sites_num_min:
         APM_frac = -1
@@ -214,7 +212,7 @@ def get_APM_frac_MAXMIN(counts):
     p_T = l_T * 1.0 / d_T
 
     APM_num = np.where(np.logical_and(p_T > APM_N_MIN,
-                                      p_T < APM_N_MAX))[0].shape[0]
+                                      p_T <= 0.5))[0].shape[0]
     APM_frac = APM_num*1.0/I
 
     return APM_frac

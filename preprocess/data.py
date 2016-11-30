@@ -274,6 +274,8 @@ class Data:
         reads_depth_ratio_log = np.array(reads_depth_ratio_log)
         if reads_depth_ratio_log.shape[0] == 0:
             print 'Error: no APM position found, existing...'
+            print 'Either the baseline_thred_APM is too large, or the constants\
+            APM_N_MIN is too large'
             sys.exit(1)
 
         reads_depth_ratio_log = reads_depth_ratio_log.reshape(
