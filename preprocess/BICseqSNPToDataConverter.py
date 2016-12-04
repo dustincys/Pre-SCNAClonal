@@ -65,21 +65,21 @@ class THetA_Converter:
 
         if "auto" == gc_correction_method:
             print "auto gc correction"
-            self._MCMC_gccorrection()
-            self._visual_gccorrection()
+#            self._MCMC_gccorrection()
+#           self._visual_gccorrection()
         elif "visual" == gc_correction_method:
             print "visual gc correction"
-            self._MCMC_gccorrection()
-            self._visual_gccorrection()
+#           self._MCMC_gccorrection()
+#            self._visual_gccorrection()
 
-#        self._load_SNP()
-#        self._baseline_selection()
+        self._load_SNP()
+        self._baseline_selection()
 
 # baseline visual selection, not meaningful, if the baseline segments are not
 # obviously located
 #        if "visual" == gc_correction_method:
 #            self._visual_baseline_selection()
-#        self._output()
+        self._output()
         pass
 
     def _baseline_selection(self):
@@ -87,9 +87,9 @@ class THetA_Converter:
         :returns: TODO
 
         """
-        self.data.get_LOH_frac()
+        self.data.get_LOH_frac_SNP()
         self.data.get_LOH_status(self.baseline_thred_LOH, True)
-        self.data.get_APM_frac()
+        self.data.get_APM_frac_SNP()
         self.data.get_APM_status(self.baseline_thred_APM)
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num, True)
 
@@ -191,8 +191,8 @@ class THetA_Converter:
         :returns: TODO
 
         """
-        tumorData=read_snp_file(self.tumor_SNP_fileName)
-        normalData=read_snp_file(self.normal_SNP_fileName)
+        tumorData = read_snp_file(self.tumor_SNP_fileName)
+        normalData = read_snp_file(self.normal_SNP_fileName)
 
         # generate the paired_counts and BAF_counts from snp
         self.data.load_counts_fromSNP(tumorData, normalData)

@@ -186,6 +186,37 @@ def get_BAF_counts(counts):
     return BAF_counts
 
 
+def get_APM_frac_MAXMIN_SNP(counts):
+    """get the baf position that are average in the tumor bam
+
+    :counts: TODO
+    :returns: TODO
+
+    """
+
+    I = counts.shape[0]
+
+    sites_num_min = 1
+
+    APM_N_MIN = constants.APM_N_MIN
+
+    if I < sites_num_min:
+        APM_frac = -1
+        return APM_frac
+
+    a_T = counts[:, 2]
+    b_T = counts[:, 3]
+    d_T = a_T + b_T
+    l_T = np.min(counts[:, 2:4], axis=1)
+    p_T = l_T * 1.0 / d_T
+
+    APM_num = np.where(np.logical_and(p_T > APM_N_MIN,
+                                      p_T <= 0.5))[0].shape[0]
+    APM_frac = APM_num*1.0/I
+
+    return APM_frac
+    pass
+
 def get_APM_frac_MAXMIN(counts):
     """get the baf position that are average in the tumor bam
 
@@ -219,6 +250,27 @@ def get_APM_frac_MAXMIN(counts):
 
     pass
 
+def get_LOH_frac_SNP(counts):
+    I = counts.shape[0]
+
+    sites_num_min = 1
+    p = constants.BINOM_TEST_P
+    thred = constants.BINOM_TEST_THRED
+
+    if I < sites_num_min:
+        LOH_frac = -1
+        return LOH_frac
+
+    a_T = counts[:, 2]
+    b_T = counts[:, 3]
+    d_T = a_T + b_T
+    l_T = np.min(counts[:, 2:4], axis=1)
+    p_T = binom.cdf(l_T, d_T, p)
+
+    LOH_num = np.where(p_T < thred)[0].shape[0]
+    LOH_frac = LOH_num*1.0/I
+
+    return LOH_frac
 
 def get_LOH_frac(counts):
     I = counts.shape[0]
@@ -447,6 +499,8 @@ def is_heterozygous(xxx_todo_changeme):
     (n_a, n_b, gamma) = xxx_todo_changeme
     if n_a == -1 or n_b == -1:
         return False
+    if n_a == 0 or n_b == 0:
+        return False
 
     p_lower = gamma / 2.0
     p_upper = 1 - p_lower
@@ -522,10 +576,10 @@ def get_row_by_segment(tumorData, normalData, segment):
 
     """
     tumorData_temp = filter(lambda item: item[0] == int(segment.chrom_name)
-                            and (item[1] >= segment.start and item <=
+                            and (item[1] >= segment.start and item[1] <=
                                  segment.end), tumorData)
     normalData_temp = filter(lambda item: item[0] == int(segment.chrom_name)
-                             and (item[1] >= segment.start and item <=
+                             and (item[1] >= segment.start and item[1] <=
                                   segment.end), normalData)
 
     return tumorData_temp, normalData_temp
@@ -542,8 +596,8 @@ def get_paired_counts(tumorData, normalData):
 
     paired_counts_temp = []
     for i in range(len(normalData)):
-        paired_counts_temp.append([int(normaldata[i][2]),
-                                   int(normaldata[i][3]),
+        paired_counts_temp.append([int(normalData[i][2]),
+                                   int(normalData[i][3]),
                                    int(tumorData[i][2]),
                                    int(tumorData[i][3]),
                                    int(normalData[i][0]),

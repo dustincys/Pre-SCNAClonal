@@ -7,4 +7,5 @@
     /media/d/data/NGS/projects/subclone/ucsc_benchmark/1954/snp/HCC1954.NORMAL.30x.withCounts \
     --gc_correction_method visual\
     --baseline_selection_method visual\
-
+    --baseline_thred_LOH 0.3 \
+    --baseline_thred_APM 0.01

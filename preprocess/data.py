@@ -217,6 +217,24 @@ class Data:
             self.segments[j].LOH_frac = get_LOH_frac(
                 self.segments[j].paired_counts)
 
+    def get_LOH_frac_SNP(self):
+        """
+        :returns: TODO
+
+        """
+        for j in range(0, self.seg_num):
+            self.segments[j].LOH_frac = get_LOH_frac_SNP(
+                self.segments[j].paired_counts)
+
+    def get_APM_frac_SNP(self):
+        """
+        :returns: TODO
+
+        """
+        for j in range(0, self.seg_num):
+            self.segments[j].APM_frac = get_APM_frac_MAXMIN_SNP(
+                self.segments[j].paired_counts)
+
     def get_APM_frac(self):
         """
         :returns: TODO
@@ -226,7 +244,7 @@ class Data:
             self.segments[j].APM_frac = get_APM_frac_MAXMIN(
                 self.segments[j].paired_counts)
 
-    def get_LOH_status(self, baseline_thred, flag_runpreprocess = False ):
+    def get_LOH_status(self, baseline_thred, flag_runpreprocess=False):
 
         if flag_runpreprocess:
             LOH_num = 0
@@ -308,16 +326,16 @@ class Data:
             if self.segments[j].APM_status == 'TRUE':
                 if cluster_flag[rdr_i]:
                     if self.segments[j].LOH_status == 'FALSE':
-                        self.segments[j].baseline_label == 'TRUE'
+                        self.segments[j].baseline_label = 'TRUE'
                         baseline_num = baseline_num + 1
                     else:
-                        self.segments[j].baseline_label == 'FALSE'
+                        self.segments[j].baseline_label = 'FALSE'
                 else:
-                    self.segments[j].baseline_label == 'FALSE'
+                    self.segments[j].baseline_label = 'FALSE'
 
                 rdr_i = rdr_i + 1
             else:
-                self.segments[j].baseline_label == 'FALSE'
+                self.segments[j].baseline_label = 'FALSE'
 
         print "baseline_num: {}".format(baseline_num)
 
