@@ -28,38 +28,21 @@ subparsers = parser.add_subparsers()
 parser_MixClone = subparsers.add_parser('MixClone',
                                         help='''Out put MixClone format''')
 
-parser_MixClone.add_argument('reference_genome',
-                             help='''FASTA file for reference genome.''')
-
-parser_MixClone.add_argument('segments_bed',
-                             help='''BED file for segments.''')
-
 parser_MixClone.add_argument('normal_bam',
                              help='''BAM file for normal sample.''')
 
 parser_MixClone.add_argument('tumor_bam',
                              help='''BAM file for tumor sample.''')
 
-parser_MixClone.add_argument(
-    'input_filename_base',
-    help='''Base name of the preprocessed input file to be created.''')
+parser_MixClone.add_argument('reference_genome',
+                             help='''FASTA file for reference genome.''')
 
-parser_MixClone.add_argument(
-    '--min_depth', default=20, type=int,
-    help='''Minimum reads depth required for both normal and tumor samples.
-    Default is 20.''')
+parser_MixClone.add_argument( 'input_filename_base',
+                             help='''Base name of the preprocessed input
+                             file to be created.''')
 
-parser_MixClone.add_argument(
-    '--min_base_qual', default=10, type=int,
-    help='''Minimum base quality required. Default is 10.''')
-
-parser_MixClone.add_argument(
-    '--min_map_qual', default=10, type=int,
-    help='''Minimum mapping quality required. Default is 10.''')
-
-parser_MixClone.add_argument(
-    '--process_num', default=1, type=int,
-    help='''Number of processes to launch for preprocessing. Default is 1.''')
+parser_MixClone.add_argument('segments_bed',
+                             help='''BED file for segments.''')
 
 parser_MixClone.add_argument('--max_copynumber', default=6, type=int,
                           help='''Set the maximum copy number''')
@@ -80,13 +63,29 @@ parser_MixClone.add_argument('--baseline_thred_APM',
                               define the segment as baseline. Default is
                               0.6.''')
 
+parser_MixClone.add_argument( '--min_depth', default=20, type=int,
+                             help='''Minimum reads depth required for both
+                             normal and tumor samples.  Default is 20.''')
+
+parser_MixClone.add_argument( '--min_base_qual', default=10, type=int,
+                             help='''Minimum base quality required.
+                             Default is 10.''')
+
+parser_MixClone.add_argument( '--min_map_qual', default=10, type=int,
+                             help='''Minimum mapping quality required.
+                             Default is 10.''')
+
+parser_MixClone.add_argument( '--process_num', default=1, type=int,
+                             help='''Number of processes to launch for
+                             preprocessing. Default is 1.''')
+
 parser_MixClone.add_argument('gc_correction_method', default="auto",
                              help='''The gc correction method, one of auto and
                              visual''')
 
 parser_MixClone.add_argument('baseline_selection_method', default="auto",
-                             help='''The baseline selection method, one of auto and
-                             visual''')
+                             help='''The baseline selection method, one of auto
+                             and visual''')
 
 parser_MixClone.set_defaults(func=run_preprocess_MixClone)
 
