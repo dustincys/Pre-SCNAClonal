@@ -58,12 +58,12 @@ parser_MixClone.add_argument('--baseline_thred_LOH', default=0.16, type=float,
                               0.16.''')
 
 parser_MixClone.add_argument('--baseline_thred_APM',
-                          default=0.3, type=float,
+                          default=0.2, type=float,
                           help='''The threshold of average P and M SNP sites
                               fraction within each segment to
                               define the segment as baseline, the range is
                              [baseline_thred_APM, 1]. Default is
-                              0.6.''')
+                              0.2.''')
 
 parser_MixClone.add_argument( '--min_depth', default=20, type=int,
                              help='''Minimum reads depth required for both
@@ -119,18 +119,20 @@ parser_THetA.add_argument('--subclone_num', default=2, type=int,
 parser_THetA.add_argument('--sampleNumber', default=10000, type=int,
                           help='''Set the sample number for visual plot''')
 
-parser_THetA.add_argument('--baseline_thred_LOH', default=0.16, type=float,
-                          help='''The threshold of LOH SNP sites fraction
+parser_THetA.add_argument('--baseline_thred_LOH', default=0.3, type=float,
+                          help='''The threshold of LOH sites fraction
                               within each segment to
-                              define the segment as baseline. Default is
-                              0.16.''')
+                              define the segment is LOH, the range is
+                             [baseline_thred_LOH, 1]. Default is
+                              0.3.''')
 
 parser_THetA.add_argument('--baseline_thred_APM',
-                          default=0.6, type=float,
+                          default=0.01, type=float,
                           help='''The threshold of average P and M SNP sites
                               fraction within each segment to
-                              define the segment as baseline. Default is
-                              0.6.''')
+                              define the segment as baselinei, The range is
+                          [baseline_thred_APM, 1]. Default is
+                              0.01.''')
 
 parser_THetA.add_argument('--gc_correction_method', default="auto",
                           help='''The gc correction method, one of auto and
