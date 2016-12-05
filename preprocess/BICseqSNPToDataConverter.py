@@ -61,20 +61,14 @@ class THetA_Converter:
 
         if "auto" == gc_correction_method:
             print "auto gc correction"
-#            self._MCMC_gccorrection()
-#           self._visual_gccorrection()
+            self._MCMC_gccorrection()
         elif "visual" == gc_correction_method:
             print "visual gc correction"
-#           self._MCMC_gccorrection()
-#            self._visual_gccorrection()
+            self._visual_gccorrection()
 
         self._load_SNP()
         self._baseline_selection()
 
-# baseline visual selection, not meaningful, if the baseline segments are not
-# obviously located
-#        if "visual" == gc_correction_method:
-#            self._visual_baseline_selection()
         self._output()
         pass
 
