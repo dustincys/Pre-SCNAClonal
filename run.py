@@ -8,7 +8,7 @@
 #         Email: chu@yanshuo.name
 #      HomePage: http://yanshuo.name
 #       Version: 0.0.1
-#    LastChange: 2016-10-21 15:00:28
+#    LastChange: 2016-12-05 20:34:26
 #       History:
 # =============================================================================
 '''
@@ -51,16 +51,18 @@ parser_MixClone.add_argument('--subclone_num', default=2, type=int,
                           help='''Set the subclone number''')
 
 parser_MixClone.add_argument('--baseline_thred_LOH', default=0.16, type=float,
-                          help='''The threshold of LOH SNP sites fraction
+                          help='''The threshold of LOH sites fraction
                               within each segment to
-                              define the segment as baseline. Default is
+                              define the segment is LOH, the range is
+                             [baseline_thred_LOH, 1]. Default is
                               0.16.''')
 
 parser_MixClone.add_argument('--baseline_thred_APM',
-                          default=0.6, type=float,
+                          default=0.3, type=float,
                           help='''The threshold of average P and M SNP sites
                               fraction within each segment to
-                              define the segment as baseline. Default is
+                              define the segment as baseline, the range is
+                             [baseline_thred_APM, 1]. Default is
                               0.6.''')
 
 parser_MixClone.add_argument( '--min_depth', default=20, type=int,
@@ -79,11 +81,11 @@ parser_MixClone.add_argument( '--process_num', default=1, type=int,
                              help='''Number of processes to launch for
                              preprocessing. Default is 1.''')
 
-parser_MixClone.add_argument('gc_correction_method', default="auto",
+parser_MixClone.add_argument('--gc_correction_method', default="auto",
                              help='''The gc correction method, one of auto and
                              visual''')
 
-parser_MixClone.add_argument('baseline_selection_method', default="auto",
+parser_MixClone.add_argument('--baseline_selection_method', default="auto",
                              help='''The baseline selection method, one of auto
                              and visual''')
 
