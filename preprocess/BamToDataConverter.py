@@ -129,7 +129,8 @@ class MixClone_Converter:
         self.data.get_APM_status(self.baseline_thred_APM)
 
     def _get_LOH_status(self):
-        self.data.get_LOH_status(self.baseline_thred_LOH, flag_runpreprocess = True)
+        self.data.get_LOH_status(self.baseline_thred_LOH,
+                                 flag_runpreprocess = True)
 
     def _compute_Lambda_S(self):
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num,
