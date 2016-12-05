@@ -26,8 +26,9 @@ class MixClone_Converter:
 
     def __init__(self, normal_bam_filename, tumor_bam_filename,
                  reference_genome_filename, input_filename_base, segments_bed,
-                 max_copynumber, subclone_num,
-                 min_depth=20, min_bqual=10, min_mqual=10,  process_num=1):
+                 max_copynumber=6, subclone_num=1, baseline_thred_LOH=0.3,
+                 baseline_thred_APM=0.01, min_depth=20, min_bqual=10,
+                 min_mqual=10,  process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
         self.reference_genome_filename = reference_genome_filename
@@ -36,6 +37,8 @@ class MixClone_Converter:
 
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
+        self.baseline_thred_LOH = baseline_thred_LOH
+        self.baseline_thred_APM = baseline_thred_APM
 
         self.min_depth = min_depth
         self.min_bqual = min_bqual

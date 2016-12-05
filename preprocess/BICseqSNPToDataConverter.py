@@ -28,9 +28,9 @@ class THetA_Converter:
     """Docstring for BICseqSNPToDataConverter. """
 
     def __init__(self, BICseq_bed_fileName, BICseq_bed_fileName_corrected,
-                 tumor_SNP_fileName, normal_SNP_fileName, seg_length,
-                 max_copynumber, subclone_num, sampleNumber, lm_lowerbound,
-                 lm_upperbound, delta, baseline_thred_LOH, baseline_thred_APM):
+                 tumor_SNP_fileName, normal_SNP_fileName,
+                 max_copynumber, subclone_num, sampleNumber,
+                 baseline_thred_LOH, baseline_thred_APM):
         """
             BICseq_bed_fileName: bicseq file name
         """
@@ -40,13 +40,9 @@ class THetA_Converter:
         self.tumor_SNP_fileName = tumor_SNP_fileName
         self.normal_SNP_fileName = normal_SNP_fileName
 
-        self.seg_length = seg_length
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
         self.sampleNumber = sampleNumber
-        self.lm_lowerbound = lm_lowerbound
-        self.lm_upperbound = lm_upperbound
-        self.delta = delta
 
         self.baseline_thred_LOH = baseline_thred_LOH
         self.baseline_thred_APM = baseline_thred_APM

@@ -26,13 +26,9 @@ def run_preprocess_THetA(args):
         args.BICseq_bed_corrected,
         args.tumor_SNP,
         args.normal_SNP,
-        args.seg_length,
         args.max_copynumber,
         args.subclone_num,
         args.sampleNumber,
-        args.lm_lowerbound,
-        args.lm_upperbound,
-        args.delta,
         args.baseline_thred_LOH,
         args.baseline_thred_APM
     )
@@ -60,8 +56,12 @@ def run_preprocess_MixClone(args):
         args.reference_genome,
         args.input_filename_base,
         args.segments_bed,
+
+        args.max_copynumber,
+        args.subclone_num,
         args.baseline_thred_LOH,
         args.baseline_thred_APM,
+
         min_depth=args.min_depth,
         min_bqual=args.min_base_qual,
         min_mqual=args.min_map_qual,
