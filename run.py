@@ -142,7 +142,6 @@ parser_THetA.add_argument('--baseline_selection_method', default="auto",
                           help='''The baseline selection method, one of auto and
                              visual''')
 
-print "run preprocess THetA"
 parser_THetA.set_defaults(func=run_preprocess_THetA)
 
 

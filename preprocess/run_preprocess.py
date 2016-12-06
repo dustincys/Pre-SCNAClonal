@@ -19,7 +19,7 @@ import time
 
 
 def run_preprocess_THetA(args):
-    print "THetA running"
+    print "run preprocess THetA"
     time_start = time.time()
     converter = THetA_Converter(
         args.BICseq_bed,
@@ -48,6 +48,7 @@ def run_preprocess_MixClone(args):
     args.baseline_selection_method: manual, auto
     '''
 
+    print "run preprocess MixClone"
     time_start = time.time()
 
     converter = MixClone_Converter(

@@ -17,6 +17,8 @@ from multiprocessing import Pool
 import numpy as np
 import pysam
 
+from mcmc import MCMCLM
+
 from preprocess.data import Data
 from preprocess.iofun import PairedCountsIterator, PairedPileupIterator
 from preprocess.utils import *
