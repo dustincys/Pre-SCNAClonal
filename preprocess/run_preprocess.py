@@ -33,8 +33,7 @@ def run_preprocess_THetA(args):
         args.baseline_thred_APM
     )
 
-    methods = (args.gc_correction_method, args.baseline_selection_method)
-    converter.convert(methods)
+    converter.convert(args.gc_correction_method)
 
     time_end = time.time()
 
@@ -69,8 +68,7 @@ def run_preprocess_MixClone(args):
         process_num=args.process_num
     )
 
-    methods = (args.gc_correction_method, args.baseline_selection_method)
-    converter.convert(methods)
+    converter.convert(args.gc_correction_method)
 
     time_end = time.time()
 

@@ -49,16 +49,15 @@ class MixClone_Converter:
 
         self.data = Data()
 
-    def convert(self, methods):
+    def convert(self, method):
         self._load_segments()
 
         print "MixClone converter converting"
-        gc_correction_method, baseline_selection_method = methods
 
-        if "auto" == gc_correction_method:
+        if "auto" == method:
             print "auto gc correction"
             self._MCMC_gccorrection()
-        elif "visual" == gc_correction_method:
+        elif "visual" == method:
             print "visual gc correction"
             self._visual_gccorrection()
 

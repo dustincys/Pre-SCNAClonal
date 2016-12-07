@@ -85,10 +85,6 @@ parser_MixClone.add_argument('--gc_correction_method', default="auto",
                              help='''The gc correction method, one of auto and
                              visual''')
 
-parser_MixClone.add_argument('--baseline_selection_method', default="auto",
-                             help='''The baseline selection method, one of auto
-                             and visual''')
-
 parser_MixClone.set_defaults(func=run_preprocess_MixClone)
 
 #===============================================================================
@@ -136,10 +132,6 @@ parser_THetA.add_argument('--baseline_thred_APM',
 
 parser_THetA.add_argument('--gc_correction_method', default="auto",
                           help='''The gc correction method, one of auto and
-                             visual''')
-
-parser_THetA.add_argument('--baseline_selection_method', default="auto",
-                          help='''The baseline selection method, one of auto and
                              visual''')
 
 parser_THetA.set_defaults(func=run_preprocess_THetA)
