@@ -16,7 +16,6 @@ import sys
 import numpy as np
 
 from plotGC import GCStripePlot
-from plotBaseline import BaselinePlot
 
 from data import Data
 from utils import read_snp_file
