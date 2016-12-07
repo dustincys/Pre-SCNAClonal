@@ -157,9 +157,10 @@ class MixClone_Converter:
         normal_bam = pysam.Samfile(self.normal_bam_filename, 'rb')
         tumor_bam = pysam.Samfile(self.tumor_bam_filename, 'rb')
 
-        print 'Loading segments by {0}...'.format(self.segments_bed)
+        print 'Loading segments with gc by {0}...'.format(self.segments_bed)
         sys.stdout.flush()
-        self.data.load_segments(normal_bam, tumor_bam, self.segments_bed)
+#       self.data.load_segments(normal_bam, tumor_bam, self.segments_bed)
+        self.data.load_segmentsn(self.segments_bed)
 
         normal_bam.close()
         tumor_bam.close()
