@@ -137,8 +137,8 @@ class GCStripePlot():
         axalpha = plt.axes([0.25, 0.2, 0.65, 0.03], axisbg=axcolor)
         axarea = plt.axes([0.25, 0.25, 0.65, 0.03], axisbg=axcolor)
 
-        sm = Slider(axm, 'slope', -np.pi/4, np.pi/4, valinit=0)
-        sc = Slider(axc, 'interception', -(max(self.y) - min(self.y)) / 4,
+        sm = Slider(axm, 'slope_delta', -np.pi/4, np.pi/4, valinit=0)
+        sc = Slider(axc, 'interception_delta', -(max(self.y) - min(self.y)) / 4,
                     (max(self.y) - min(self.y)) / 4, valinit=0)
         salpha = Slider(axalpha, 'alpha', 0, 0.8, valinit=self.alpha0)
         sarea = Slider(axarea, 'area', 1, 50, valinit=self.area0)
