@@ -45,6 +45,7 @@ class MixClone_Converter:
         self.min_depth = min_depth
         self.min_bqual = min_bqual
         self.min_mqual = min_mqual
+        print "process_num = {}".format(process_num)
         self.process_num = process_num
 
         self.data = Data()
@@ -77,6 +78,7 @@ class MixClone_Converter:
         """
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         m, c = mcmclm.run()
+        print "MCMC slope = {}".format(m)
         self._correct(m, c)
 
 
@@ -167,6 +169,7 @@ class MixClone_Converter:
     def _get_counts(self):
         seg_num = self.data.seg_num
         process_num = self.process_num
+        print "process_num = {}".format(process_num)
 
         if process_num > seg_num:
             process_num = seg_num

@@ -97,6 +97,7 @@ class THetA_Converter:
         """
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         m, c = mcmclm.run()
+        print "MCMC slope = {}".format(m)
         self._correct(m, c)
 
     def _correct(self, slope, intercept):
