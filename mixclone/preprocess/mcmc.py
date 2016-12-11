@@ -20,6 +20,7 @@ from scipy.stats import gaussian_kde
 import constants
 from scipy.signal import argrelextrema
 
+import heapq
 
 class MCMCLM(object):
 
@@ -119,7 +120,8 @@ class MCMCLM(object):
             peaks = argrelextrema(y_ys, np.greater)
             index = np.argmax(y_ys)
 
-            prob = y_ys[index] * len(peaks[0])
+            prob = sum(heapq.nlargest(self._max_copynumber,  y_ys[peaks[0]]))
+            #prob = y_ys[index] * len(peaks[0])
 
             return prob
 
