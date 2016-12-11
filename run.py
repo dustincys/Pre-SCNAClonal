@@ -15,8 +15,8 @@
 
 import argparse
 
-from preprocess.run_preprocess import run_preprocess_MixClone
-from preprocess.run_preprocess import run_preprocess_THetA
+from mixclone.preprocess.run_preprocess import run_preprocess_MixClone
+from mixclone.preprocess.run_preprocess import run_preprocess_THetA
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers()

@@ -19,9 +19,9 @@ import pysam
 
 from mcmc import MCMCLM
 
-from preprocess.data import Data
-from preprocess.iofun import PairedCountsIterator, PairedPileupIterator
-from preprocess.utils import *
+from mixclone.preprocess.data import Data
+from mixclone.preprocess.iofun import PairedCountsIterator, PairedPileupIterator
+from mixclone.preprocess.utils import *
 
 
 class MixClone_Converter:
