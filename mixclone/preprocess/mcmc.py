@@ -22,6 +22,7 @@ from scipy.signal import argrelextrema
 
 import heapq
 
+
 class MCMCLM(object):
 
     """The MCMC model for linear regression, return the slope and inlier"""
@@ -118,10 +119,8 @@ class MCMCLM(object):
                                1000*self._tau*self._max_copynumber)
             y_ys = y_density(y_xs)
             peaks = argrelextrema(y_ys, np.greater)
-            index = np.argmax(y_ys)
 
             prob = sum(heapq.nlargest(self._max_copynumber,  y_ys[peaks[0]]))
-            #prob = y_ys[index] * len(peaks[0])
 
             return prob
 
