@@ -71,6 +71,9 @@ parser_MixClone.add_argument('--baseline_thred_APM',
                              [baseline_thred_APM, 1]. Default is
                               0.2.''')
 
+parser_MixClone.add_argument('--pkl_flag', default=False, type=bool,
+                          help='''The pkl flag''')
+
 parser_MixClone.add_argument( '--min_depth', default=20, type=int,
                              help='''Minimum reads depth required for both
                              normal and tumor samples.  Default is 20.''')
