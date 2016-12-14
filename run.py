@@ -44,6 +44,12 @@ parser_MixClone.add_argument( 'input_filename_base',
 parser_MixClone.add_argument('segments_bed',
                              help='''BED file for segments.''')
 
+parser_MixClone.add_argument('BICseq_bed_corrected',
+                          help='''The name of corrected BICseq result file''')
+
+parser_MixClone.add_argument('pkl_path',
+                          help='''Load the pkl path''')
+
 parser_MixClone.add_argument('--max_copynumber', default=6, type=int,
                           help='''Set the maximum copy number''')
 

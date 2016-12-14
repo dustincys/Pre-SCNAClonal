@@ -56,6 +56,8 @@ def run_preprocess_MixClone(args):
         args.reference_genome,
         args.input_filename_base,
         args.segments_bed,
+        args.BICseq_bed_corrected,
+        args.pkl_path,
 
         args.max_copynumber,
         args.subclone_num,
@@ -68,7 +70,7 @@ def run_preprocess_MixClone(args):
         process_num=args.process_num
     )
 
-    converter.convert(args.gc_correction_method)
+    converter.convert(args.gc_correction_method, args.pkl_flag)
 
     time_end = time.time()
 

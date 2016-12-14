@@ -28,19 +28,22 @@ class MixClone_Converter:
 
     def __init__(self, normal_bam_filename, tumor_bam_filename,
                  reference_genome_filename, input_filename_base, segments_bed,
+                 BICseq_bed_fileName_corrected,
                  max_copynumber=6, subclone_num=1, baseline_thred_LOH=0.3,
-                 baseline_thred_APM=0.01, min_depth=20, min_bqual=10,
+                 baseline_thred_APM=0.01, pkl_path="", min_depth=20, min_bqual=10,
                  min_mqual=10,  process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
         self.reference_genome_filename = reference_genome_filename
         self.input_filename_base = input_filename_base
         self.segments_bed = segments_bed
+        self.BICseq_bed_fileName_corrected = BICseq_bed_fileName_corrected
 
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
         self.baseline_thred_LOH = baseline_thred_LOH
         self.baseline_thred_APM = baseline_thred_APM
+        self.pkl_path = pkl_path
 
         self.min_depth = min_depth
         self.min_bqual = min_bqual
@@ -50,19 +53,25 @@ class MixClone_Converter:
 
         self.data = Data()
 
-    def convert(self, method):
-        self._load_segments()
+    def convert(self, method, pkl_flag=False):
+        if pkl_flag and pkl_path != "":
+            infile = open(self.pkl_path, 'rb')
+            self.data = pkl.load(infile)
+            infile.close()
+        else:
+            self._load_segments()
 
-        print "MixClone converter converting"
+            print "MixClone converter converting"
 
-        if "auto" == method:
-            print "auto gc correction"
-            self._MCMC_gccorrection()
-        elif "visual" == method:
-            print "visual gc correction"
-            self._visual_gccorrection()
+            if "auto" == method:
+                print "auto gc correction"
+                self._MCMC_gccorrection()
+            elif "visual" == method:
+                print "visual gc correction"
+                self._visual_gccorrection()
+            self._output()
+            self._get_counts()
 
-        self._get_counts()
         self._baseline_selection()
 
         data_file_name = self.input_filename_base + '.MixClone.input.pkl'
@@ -139,6 +148,35 @@ class MixClone_Converter:
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num,
                                    flag_runpreprocess = True)
 
+    def _output(self):
+        """Output the parameter for THetA
+
+        The Upper and Lower Boundaries for normal heuristic
+        The GC corrected interval_count_file
+        """
+
+        interval_count_file = open(self.BICseq_bed_fileName_corrected, 'w')
+        interval_count_file.write(
+            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\gc\n")
+
+        for i in range(len(self.data.segments)):
+            ID_i = self.data.segments[i].chrom_idx
+            chrm_i = self.data.segments[i].chrom_name
+            start_i = self.data.segments[i].start
+            end_i = self.data.segments[i].end
+            tumorCount_i = self.data.segments[i].tumor_reads_num
+            normalCount_i = self.data.segments[i].normal_reads_num
+            gc_i = self.data.segments[i].gc
+            interval_count_file.write(
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i, start_i,
+                                                        end_i, tumorCount_i,
+                                                        normalCount_i, gc_i)
+            )
+
+        interval_count_file.close()
+
+        print "GC corrected interval file generated!"
+        sys.stdout.flush()
     def _load_segmentsn(self):
         """
         :returns: TODO

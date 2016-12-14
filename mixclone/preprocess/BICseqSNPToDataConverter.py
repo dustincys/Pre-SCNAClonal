@@ -150,7 +150,7 @@ class THetA_Converter:
 
         interval_count_file = open(self.BICseq_bed_fileName_corrected, 'w')
         interval_count_file.write(
-            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\n")
+            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\gc\n")
 
         for i in range(len(self.data.segments)):
             ID_i = self.data.segments[i].chrom_idx
@@ -159,10 +159,11 @@ class THetA_Converter:
             end_i = self.data.segments[i].end
             tumorCount_i = self.data.segments[i].tumor_reads_num
             normalCount_i = self.data.segments[i].normal_reads_num
+            gc_i = self.data.segments[i].gc
             interval_count_file.write(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(ID_i, chrm_i, start_i,
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i, start_i,
                                                         end_i, tumorCount_i,
-                                                        normalCount_i)
+                                                        normalCount_i, gc_i)
             )
 
         interval_count_file.close()
