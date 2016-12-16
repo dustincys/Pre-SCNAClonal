@@ -60,30 +60,23 @@ class MixClone_Converter:
             infile.close()
         else:
             self._load_segments()
-
             print "MixClone converter converting"
 
             if "auto" == method:
-                print "auto gc correction"
                 self._MCMC_gccorrection()
-                print "visual gc correction 1"
-                self._visual_gccorrection()
             elif "visual" == method:
-                print "visual gc correction 1"
-                self._visual_gccorrection()
-                print "visual gc correction 2"
                 self._visual_gccorrection()
                 sys.stdout.flush()
-            #self._output()
-            #self._get_counts()
+            self._get_counts()
 
-        #self._baseline_selection()
+        self._output()
+        self._baseline_selection()
 
-        #data_file_name = self.input_filename_base + '.MixClone.input.pkl'
-        #outfile = open(data_file_name, 'wb')
-        #pkl.dump(self.data, outfile, protocol=2)
+        data_file_name = self.input_filename_base + '.MixClone.input.pkl'
+        outfile = open(data_file_name, 'wb')
+        pkl.dump(self.data, outfile, protocol=2)
 
-        #outfile.close()
+        outfile.close()
 
     def _MCMC_gccorrection(self):
         """

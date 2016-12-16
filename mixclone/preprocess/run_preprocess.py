@@ -26,6 +26,7 @@ def run_preprocess_THetA(args):
         args.BICseq_bed_corrected,
         args.tumor_SNP,
         args.normal_SNP,
+        args.pkl_path,
         args.max_copynumber,
         args.subclone_num,
         args.sampleNumber,
@@ -33,7 +34,7 @@ def run_preprocess_THetA(args):
         args.baseline_thred_APM
     )
 
-    converter.convert(args.gc_correction_method)
+    converter.convert(args.gc_correction_method, args.pkl_flag)
 
     time_end = time.time()
 
