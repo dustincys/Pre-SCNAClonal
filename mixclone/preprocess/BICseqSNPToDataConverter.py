@@ -28,14 +28,16 @@ class THetA_Converter:
 
     """Docstring for BICseqSNPToDataConverter. """
 
-    def __init__(self, BICseq_bed_fileName, BICseq_bed_fileName_corrected,
-                 tumor_SNP_fileName, normal_SNP_fileName, pkl_path="",
+    def __init__(self, input_filename_base, BICseq_bed_fileName,
+                 BICseq_bed_fileName_corrected, tumor_SNP_fileName,
+                 normal_SNP_fileName, pkl_path="",
                  max_copynumber, subclone_num, sampleNumber,
                  baseline_thred_LOH, baseline_thred_APM):
         """
             BICseq_bed_fileName: bicseq file name
         """
 
+        self.input_filename_base = input_filename_base
         self.BICseq_bed_fileName = BICseq_bed_fileName
         self.BICseq_bed_fileName_corrected = BICseq_bed_fileName_corrected
         self.tumor_SNP_fileName = tumor_SNP_fileName
@@ -74,6 +76,12 @@ class THetA_Converter:
         self._baseline_selection()
 
         self._output()
+
+        data_file_name = self.input_filename_base + '.MixClone.input.pkl'
+        outfile = open(data_file_name, 'wb')
+        pkl.dump(self.data, outfile, protocol=2)
+
+        outfile.close()
         pass
 
     def _baseline_selection(self):

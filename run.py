@@ -103,6 +103,10 @@ parser_MixClone.set_defaults(func=run_preprocess_MixClone)
 parser_THetA = subparsers.add_parser('THetA',
                                      help='''Out put THetA parameter''')
 
+parser_THetA.add_argument( 'input_filename_base',
+                             help='''Base name of the preprocessed input
+                             file to be created.''')
+
 parser_THetA.add_argument('BICseq_bed',
                           help='''BICseq result file''')
 

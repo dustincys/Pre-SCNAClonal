@@ -22,6 +22,7 @@ def run_preprocess_THetA(args):
     print "run preprocess THetA"
     time_start = time.time()
     converter = THetA_Converter(
+        args.input_filename_base,
         args.BICseq_bed,
         args.BICseq_bed_corrected,
         args.tumor_SNP,
