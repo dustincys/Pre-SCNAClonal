@@ -48,6 +48,10 @@ def run_preprocess_MixClone(args):
     '''
 
     print "run preprocess MixClone"
+    print "pkl_path"
+    print args.pkl_path
+    print "pkl_flag"
+    print args.pkl_flag
     time_start = time.time()
 
     converter = MixClone_Converter(
@@ -70,6 +74,8 @@ def run_preprocess_MixClone(args):
         process_num=args.process_num
     )
 
+    print "pilflag"
+    print args.pkl_flag
     converter.convert(args.gc_correction_method, args.pkl_flag)
 
     time_end = time.time()

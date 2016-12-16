@@ -275,6 +275,7 @@ class Data:
 
         if not flag_runpreprocess:
             print "compute_Lambda_S function called from model"
+            sys.stdout.flush()
             return
 
         thresh = constants.HC_THRESH
@@ -318,6 +319,7 @@ class Data:
 
         print mccs
         print "log Lambda_S: {}".format(np.log(rdr_min))
+        sys.stdout.flush()
 
         cluster_flag = (clusters == cluster_min)
         baseline_num = 0

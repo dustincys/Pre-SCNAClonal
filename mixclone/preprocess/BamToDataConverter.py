@@ -28,9 +28,9 @@ class MixClone_Converter:
 
     def __init__(self, normal_bam_filename, tumor_bam_filename,
                  reference_genome_filename, input_filename_base, segments_bed,
-                 BICseq_bed_fileName_corrected,
+                 BICseq_bed_fileName_corrected, pkl_path="",
                  max_copynumber=6, subclone_num=1, baseline_thred_LOH=0.3,
-                 baseline_thred_APM=0.01, pkl_path="", min_depth=20, min_bqual=10,
+                 baseline_thred_APM=0.01, min_depth=20, min_bqual=10,
                  min_mqual=10,  process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
@@ -38,12 +38,12 @@ class MixClone_Converter:
         self.input_filename_base = input_filename_base
         self.segments_bed = segments_bed
         self.BICseq_bed_fileName_corrected = BICseq_bed_fileName_corrected
+        self.pkl_path = pkl_path
 
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
         self.baseline_thred_LOH = baseline_thred_LOH
         self.baseline_thred_APM = baseline_thred_APM
-        self.pkl_path = pkl_path
 
         self.min_depth = min_depth
         self.min_bqual = min_bqual
@@ -54,7 +54,9 @@ class MixClone_Converter:
         self.data = Data()
 
     def convert(self, method, pkl_flag=False):
-        if pkl_flag and pkl_path != "":
+        if pkl_flag and self.pkl_path != "":
+            print "load pkl from"
+            print self.pkl_path
             infile = open(self.pkl_path, 'rb')
             self.data = pkl.load(infile)
             infile.close()
@@ -69,9 +71,9 @@ class MixClone_Converter:
             elif "visual" == method:
                 print "visual gc correction"
                 self._visual_gccorrection()
-            self._output()
             self._get_counts()
 
+        self._output()
         self._baseline_selection()
 
         data_file_name = self.input_filename_base + '.MixClone.input.pkl'
@@ -131,6 +133,7 @@ class MixClone_Converter:
 
 
     def _baseline_selection(self):
+        print "begin baseline selection.."
         self._get_LOH_frac()
         self._get_LOH_status()
         self._get_APM_frac()
@@ -145,6 +148,7 @@ class MixClone_Converter:
                                  flag_runpreprocess = True)
 
     def _compute_Lambda_S(self):
+        print "begin compute lambda s .."
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num,
                                    flag_runpreprocess = True)
 
@@ -157,7 +161,7 @@ class MixClone_Converter:
 
         interval_count_file = open(self.BICseq_bed_fileName_corrected, 'w')
         interval_count_file.write(
-            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\gc\n")
+            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\tgc\n")
 
         for i in range(len(self.data.segments)):
             ID_i = self.data.segments[i].chrom_idx
