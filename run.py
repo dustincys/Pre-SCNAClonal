@@ -134,6 +134,10 @@ parser_THetA.add_argument('--subclone_num', default=2, type=int,
 parser_THetA.add_argument('--sampleNumber', default=10000, type=int,
                           help='''Set the sample number for visual plot''')
 
+parser_THetA.add_argument('--gc_correction_method', default="auto",
+                          help='''The gc correction method, one of auto and
+                             visual''')
+
 parser_THetA.add_argument('--baseline_thred_LOH', default=0.3, type=float,
                           help='''The threshold of LOH sites fraction
                               within each segment to
@@ -149,9 +153,14 @@ parser_THetA.add_argument('--baseline_thred_APM',
                           [baseline_thred_APM, 1]. Default is
                               0.01.''')
 
-parser_THetA.add_argument('--gc_correction_method', default="auto",
-                          help='''The gc correction method, one of auto and
-                             visual''')
+parser_THetA.add_argument( '--gamma', default=0.1, type=float,
+                          help='''gamma parameter for determine heterozygous snp
+                          loci''')
+
+parser_THetA.add_argument( '--process_num', default=4, type=int,
+                             help='''Number of processes to launch for
+                             preprocessing. Default is 1.''')
+
 
 parser_THetA.set_defaults(func=run_preprocess_THetA)
 

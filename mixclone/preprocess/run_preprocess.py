@@ -33,6 +33,8 @@ def run_preprocess_THetA(args):
         args.sampleNumber,
         args.baseline_thred_LOH,
         args.baseline_thred_APM
+        args.gamma,
+        args.process_num
     )
 
     converter.convert(args.gc_correction_method, args.pkl_flag)

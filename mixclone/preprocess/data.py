@@ -191,7 +191,7 @@ class Data:
             self.segments.append(segment_i)
             self.seg_num += 1
 
-    def load_counts_fromSNP(self, tumorData, normalData):
+    def load_counts_fromSNP(self, tumorData, normalData, gamma, process_num):
         """Load the SNP data into each segment,
         the format is paired_counts and BAF_counts
 
@@ -201,10 +201,10 @@ class Data:
 
         """
 
-        gamma = constants.GAMMA
-        numProcesses = constants.NUMPROCESSES
+#       gamma = constants.GAMMA
+#       process_num = constants.NUMPROCESSES
         tumorData_nhetero, normalData_nhetero = filter_normal_heterozygous(
-            tumorData, normalData, gamma, numProcesses)
+            tumorData, normalData, gamma, process_num)
         for j in range(0, len(self.segments)):
             normalData_temp, tumorData_temp = get_row_by_segment(
                 tumorData_nhetero, normalData_nhetero, self.segments[j])

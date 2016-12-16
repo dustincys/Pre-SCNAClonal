@@ -383,7 +383,7 @@ def calculate_BAF(
     chrmsToUse,
     minSNP,
     gamma,
-     numProcesses):
+     process_num):
 
         # function to select columns from a 2D list
     select_col = lambda array, colNum: map(lambda x: x[colNum], array)
@@ -405,7 +405,7 @@ def calculate_BAF(
     newTumorData = []
     newNormalData = []
     print "Determining heterozygosity."
-    p = Pool(numProcesses)
+    p = Pool(process_num)
     repGamma = [gamma for i in range(len(tumorData))]
     isHet = p.map(
         is_heterozygous, zip(
@@ -448,7 +448,7 @@ def calculate_BAF(
     return tumorBAF, normalBAF, newTumorData, newNormalData
 
 
-def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
+def filter_normal_heterozygous(tumorData, normalData, gamma, process_num):
     # function to select columns from a 2D list
     select_col = lambda array, colNum: map(lambda x: x[colNum], array)
 
@@ -471,7 +471,7 @@ def filter_normal_heterozygous(tumorData, normalData, gamma, numProcesses):
     print "Determining heterozygosity."
     repGamma = [gamma for i in range(len(tumorData))]
     wholeData = zip(normalRefCount, normalMutCount, repGamma)
-    p = Pool(numProcesses)
+    p = Pool(process_num)
     print wholeData[0]
     isHet = p.map(is_heterozygous, wholeData)
 

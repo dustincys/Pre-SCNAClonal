@@ -32,7 +32,8 @@ class THetA_Converter:
                  BICseq_bed_fileName_corrected, tumor_SNP_fileName,
                  normal_SNP_fileName, pkl_path="",
                  max_copynumber, subclone_num, sampleNumber,
-                 baseline_thred_LOH, baseline_thred_APM):
+                 baseline_thred_LOH, baseline_thred_APM,
+                 gamma, process_num):
         """
             BICseq_bed_fileName: bicseq file name
         """
@@ -50,6 +51,8 @@ class THetA_Converter:
 
         self.baseline_thred_LOH = baseline_thred_LOH
         self.baseline_thred_APM = baseline_thred_APM
+        self.gamma = gamma
+        self.process_num = process_num
 
         self.data = Data()
 
@@ -199,6 +202,7 @@ class THetA_Converter:
         normalData = read_snp_file(self.normal_SNP_fileName)
 
         # generate the paired_counts and BAF_counts from snp
-        self.data.load_counts_fromSNP(tumorData, normalData)
+        self.data.load_counts_fromSNP(tumorData, normalData, self.gamma,
+                                      self.process_num)
 
         pass
