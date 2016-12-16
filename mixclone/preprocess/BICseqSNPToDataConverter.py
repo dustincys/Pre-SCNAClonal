@@ -60,14 +60,17 @@ class THetA_Converter:
         if "auto" == method:
             print "auto gc correction"
             self._MCMC_gccorrection()
+            self._visual_gccorrection()
         elif "visual" == method:
             print "visual gc correction"
             self._visual_gccorrection()
+            print "visual gc correction2"
+            self._visual_gccorrection()
 
-        self._load_SNP()
-        self._baseline_selection()
+        #self._load_SNP()
+        #self._baseline_selection()
 
-        self._output()
+        #self._output()
         pass
 
     def _baseline_selection(self):
