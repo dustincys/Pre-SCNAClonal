@@ -13,6 +13,8 @@
 
 import sys
 
+import pickle as pkl
+
 import numpy as np
 
 from plotGC import GCStripePlot
@@ -27,7 +29,7 @@ class THetA_Converter:
     """Docstring for BICseqSNPToDataConverter. """
 
     def __init__(self, BICseq_bed_fileName, BICseq_bed_fileName_corrected,
-                 tumor_SNP_fileName, normal_SNP_fileName,
+                 tumor_SNP_fileName, normal_SNP_fileName, pkl_path="",
                  max_copynumber, subclone_num, sampleNumber,
                  baseline_thred_LOH, baseline_thred_APM):
         """
@@ -38,6 +40,7 @@ class THetA_Converter:
         self.BICseq_bed_fileName_corrected = BICseq_bed_fileName_corrected
         self.tumor_SNP_fileName = tumor_SNP_fileName
         self.normal_SNP_fileName = normal_SNP_fileName
+        self.pkl_path = pkl_path
 
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
@@ -48,23 +51,26 @@ class THetA_Converter:
 
         self.data = Data()
 
-    def convert(self, method):
+    def convert(self, method, pkl_flag=False):
         """convert data to the THetA style
         :returns: BICseq bed file, gc corrected, and relevant parameters
 
         """
-        self._load_segments()
+        if pkl_flag and self.pkl_path != "":
+            infile = open(self.pkl_path, 'rb')
+            self.data = pkl.load(infile)
+            infile.close()
+        else:
+            self._load_segments()
+            print "THetA converter converting"
 
-        print "THetA converter converting"
+            if "auto" == method:
+                self._MCMC_gccorrection()
+            elif "visual" == method:
+                self._visual_gccorrection()
 
-        if "auto" == method:
-            print "auto gc correction"
-            self._MCMC_gccorrection()
-        elif "visual" == method:
-            print "visual gc correction"
-            self._visual_gccorrection()
+            self._load_SNP()
 
-        self._load_SNP()
         self._baseline_selection()
 
         self._output()

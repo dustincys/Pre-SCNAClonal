@@ -62,15 +62,13 @@ class MixClone_Converter:
             infile.close()
         else:
             self._load_segments()
-
             print "MixClone converter converting"
 
             if "auto" == method:
-                print "auto gc correction"
                 self._MCMC_gccorrection()
             elif "visual" == method:
-                print "visual gc correction"
                 self._visual_gccorrection()
+                sys.stdout.flush()
             self._get_counts()
 
         self._output()
