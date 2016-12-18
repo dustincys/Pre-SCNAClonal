@@ -122,6 +122,9 @@ class MCMCLM(object):
 
             prob = sum(heapq.nlargest(self._max_copynumber,  y_ys[peaks[0]]))
 
+            if self._max_copynumber <= len(peaks[0]):
+                prob = prob * 100
+
             return prob
 
         slope_distribution = pymc.stochastic_from_dist(
@@ -164,3 +167,23 @@ class MCMCLM(object):
         y0, x0 = [list(t) for t in zip(*l)]
 
         return np.array(y0), np.array(x0)
+
+    def getPeakRange(self, y, x, slope):
+        """TODO: Docstring for getPeakRange.
+
+        :y: TODO
+        :x: TODO
+        :slope: TODO
+        :returns: TODO
+
+        """
+        y_corrected = self._correctY(y, x, slope, 0)
+        y_density = gaussian_kde(y_corrected)
+
+        y_down = min(y_corrected)
+        y_up = max(y_corrected)
+        y_xs = np.linspace(y_down, y_up, 1000*self._tau*self._max_copynumber)
+        y_ys = y_density(y_xs)
+        peaks = argrelextrema(y_ys, np.greater)
+
+        return np.mean(heapq.nlargest(self._max_copynumber,  y_xs[peaks[0]]))
