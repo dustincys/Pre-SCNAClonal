@@ -30,7 +30,7 @@ class THetA_Converter:
 
     def __init__(self, input_filename_base, BICseq_bed_fileName,
                  BICseq_bed_fileName_corrected, tumor_SNP_fileName,
-                 normal_SNP_fileName, pkl_path="",
+                 normal_SNP_fileName, pkl_path,
                  max_copynumber, subclone_num, sampleNumber,
                  baseline_thred_LOH, baseline_thred_APM,
                  gamma, process_num):
@@ -61,6 +61,8 @@ class THetA_Converter:
         :returns: BICseq bed file, gc corrected, and relevant parameters
 
         """
+        print "pkl_flag"
+        print pkl_flag
         if pkl_flag and self.pkl_path != "":
             infile = open(self.pkl_path, 'rb')
             self.data = pkl.load(infile)

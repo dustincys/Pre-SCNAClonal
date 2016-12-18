@@ -43,10 +43,10 @@ def main():
         chrom, start, end, sampleReads, referenceReads, gc\
             = line.strip('\n').split('\t')[0:6]
 
-        temp_y = np.log(sampleReads + 1) - np.log(referenceReads + 1)
+        temp_y = np.log(int(sampleReads) + 1) - np.log(int(referenceReads) + 1)
 
-        if temp_y < args.lower_bound or \
-                temp_y > args.upper_bound or\
+        if temp_y < float(args.lower_bound) or \
+                temp_y > float(args.upper_bound) or\
                 chrom not in CHROM_LIST:
             continue
 

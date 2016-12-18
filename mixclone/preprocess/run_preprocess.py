@@ -20,6 +20,8 @@ import time
 
 def run_preprocess_THetA(args):
     print "run preprocess THetA"
+    print "run preprocess THetA args.pkl_flag"
+    print args.pkl_flag
     time_start = time.time()
     converter = THetA_Converter(
         args.input_filename_base,
@@ -32,7 +34,7 @@ def run_preprocess_THetA(args):
         args.subclone_num,
         args.sampleNumber,
         args.baseline_thred_LOH,
-        args.baseline_thred_APM
+        args.baseline_thred_APM,
         args.gamma,
         args.process_num
     )
