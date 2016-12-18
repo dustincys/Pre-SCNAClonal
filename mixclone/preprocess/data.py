@@ -362,17 +362,18 @@ class Data:
         lower_bound = float('inf')
 
         for seg in baselines:
-            ratio_up = np.exp(np.log(float(seg.tumor_reads_num) /
-                                     float(seg.normal_reads_num)) + 0.5 * pr) *\
+            ratio = (float(seg.tumor_reads_num) /
+                     float(seg.normal_reads_num)) *\
                 (float(sum_r_n) / float(sum_r_t))
-            ratio_down = np.exp(np.log(float(seg.tumor_reads_num) /
-                                       float(seg.normal_reads_num)) -
-                                0.5 * pr) * \
-                (float(sum_r_n) / float(sum_r_t))
-            if upper_bound < ratio_up:
-                upper_bound = ratio_up
-            if lower_bound > ratio_down:
-                lower_bound = ratio_down
+            if upper_bound < ratio:
+                upper_bound = ratio
+            if lower_bound > ratio:
+                lower_bound = ratio
+
+        if (upper_bound / lower_bound) < np.exp(pr):
+            a = (np.log(pr) * lower_bound - upper_bound) / (1.0 + np.log(pr))
+            upper_bound = upper_bound + a
+            lower_bound = lower_bound - a
 
         return upper_bound, lower_bound
 
