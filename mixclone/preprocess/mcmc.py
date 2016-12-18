@@ -187,5 +187,18 @@ class MCMCLM(object):
         y_xs = np.linspace(y_down, y_up, 1000*self._tau*self._max_copynumber)
         y_ys = y_density(y_xs)
         peaks = argrelextrema(y_ys, np.greater)
+        y_ys_nl = np.array(heapq.nlargest(self._max_copynumber,
+                                          y_ys[peaks[0]]))
+        idx = np.nonzero(y_ys_nl[:,None] == y_ys)[1]
+        y_xs_nl = np.sort(y_xs[idx])
+        pr = 0
+        for i in range(len(y_xs_nl) - 1):
+            pr = pr + y_xs_nl[i+1] - y_xs_nl[i]
+        pr = pr * 1.0 / (len(y_xs_nl) - 1)
 
-        return np.mean(heapq.nlargest(self._max_copynumber,  y_xs[peaks[0]]))
+        print "idx = "
+        print idx
+        print "y_xs_nl = "
+        print y_xs_nl
+
+        return pr
