@@ -56,6 +56,9 @@ class THetA_Converter:
 
         self.data = Data()
 
+#       peak range
+        self.pr = 0
+
     def convert(self, method, pkl_flag=False):
         """convert data to the THetA style
         :returns: BICseq bed file, gc corrected, and relevant parameters
@@ -100,15 +103,6 @@ class THetA_Converter:
         self.data.get_APM_status(self.baseline_thred_APM)
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num, True)
 
-    def _visual_baseline_selection(self):
-        """
-        :returns: TODO
-
-        """
-
-        blp = BaselinePlot(self.data, self.max_copynumber, self.subclone_num)
-        blp.plot()
-
     def _MCMC_gccorrection(self):
         """
         The interception is irrelevant for correction, set as median
@@ -117,6 +111,8 @@ class THetA_Converter:
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         m, c = mcmclm.run()
         print "MCMC slope = {}".format(m)
+        self.pr = mcmclm.getPeakRange(m)
+        print "MCMC peak range = {}".format(self.pr)
         self._correct(m, c)
 
     def _correct(self, slope, intercept):
@@ -145,11 +141,11 @@ class THetA_Converter:
 
 #       Sampling then linear regression, poor performance
 #       gsp.sampleln([i * 1000 for i in range(1,9)], 100)
-
         gsp.plot()
 
 # todo   trimed x, y position
         x, y, m, c = gsp.output()
+        self.pr = (max(y) - min(y)) / self.max_copynumber
 
         print "x, y, m, c"
         print x, y, m, c
@@ -162,7 +158,7 @@ class THetA_Converter:
         The Upper and Lower Boundaries for normal heuristic
         The GC corrected interval_count_file
         """
-        upper_bound, lower_bound = self.data.compute_normal_boundary()
+        upper_bound, lower_bound = self.data.compute_normal_boundary(self.pr)
         print "upper_bound = {0}\n lower_bound = {1}".format(upper_bound,
                                                              lower_bound)
         sys.stdout.flush()
@@ -180,10 +176,12 @@ class THetA_Converter:
             normalCount_i = self.data.segments[i].normal_reads_num
             gc_i = self.data.segments[i].gc
             interval_count_file.write(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i, start_i,
-                                                        end_i, tumorCount_i,
-                                                        normalCount_i, gc_i)
-            )
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i,
+                                                             start_i,
+                                                             end_i,
+                                                             tumorCount_i,
+                                                             normalCount_i,
+                                                             gc_i))
 
         interval_count_file.close()
 

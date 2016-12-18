@@ -16,8 +16,8 @@ import numpy as np
 import scipy.cluster.hierarchy as hcluster
 from collections import Counter
 
-#from GCBASELINE import constants
-#from GCBASELINE.preprocess.utils import *
+# from GCBASELINE import constants
+# from GCBASELINE.preprocess.utils import *
 from utils import *
 import constants
 
@@ -133,7 +133,8 @@ class Data:
             if 0 == normal_reads_num:
                 segment_i.log2_ratio = -float('Inf')
             else:
-                segment_i.log2_ratio = np.log2(1.0*tumor_reads_num/normal_reads_num)
+                segment_i.log2_ratio = np.log2(1.0 *
+                                               tumor_reads_num/normal_reads_num)
 
             segment_i.gc = gcs[i]
 
@@ -269,7 +270,7 @@ class Data:
         print "APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
 
     def compute_Lambda_S(self, max_copynumber, subclone_num,
-                            flag_runpreprocess = False):
+                         flag_runpreprocess=False):
         """ compute the Lambda S, through hierarchy clustering
         """
 
@@ -347,7 +348,7 @@ class Data:
 
         self.Lambda_S = rdr_min
 
-    def compute_normal_boundary(self):
+    def compute_normal_boundary(self, pr):
         """ compute the Lambda S, through hierarchy clustering
         :returns: TODO
 
@@ -361,12 +362,17 @@ class Data:
         lower_bound = float('inf')
 
         for seg in baselines:
-            ratio = (float(seg.tumor_reads_num) / float(sum_r_t)
-                     ) / (float(seg.normal_reads_num) / float(sum_r_n))
-            if upper_bound < ratio:
-                upper_bound = ratio
-            if lower_bound > ratio:
-                lower_bound = ratio
+            ratio_up = np.exp(np.log(float(seg.tumor_reads_num) /
+                                     float(seg.normal_reads_num)) + 0.5 * pr) *\
+                (float(sum_r_n) / float(sum_r_t))
+            ratio_down = np.exp(np.log(float(seg.tumor_reads_num) /
+                                       float(seg.normal_reads_num)) -
+                                0.5 * pr) * \
+                (float(sum_r_n) / float(sum_r_t))
+            if upper_bound < ratio_up:
+                upper_bound = ratio_up
+            if lower_bound > ratio_down:
+                lower_bound = ratio_down
 
         return upper_bound, lower_bound
 
@@ -380,7 +386,7 @@ class Data:
         self.reset_baseline_label()
         self.get_LOH_status(LOH_THRED)
         self.get_APM_status(APM_THRED)
-#todo
+# todo
         self.compute_Lambda_S(max_copynumber, subclone_num)
 
     def reset_LOH_status(self):
@@ -394,4 +400,3 @@ class Data:
     def reset_baseline_label(self):
         for j in range(0, self.seg_num):
             self.segments[j].baseline_label = 'FALSE'
-

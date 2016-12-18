@@ -168,7 +168,7 @@ class MCMCLM(object):
 
         return np.array(y0), np.array(x0)
 
-    def getPeakRange(self, y, x, slope):
+    def getPeakRange(self, slope_best):
         """TODO: Docstring for getPeakRange.
 
         :y: TODO
@@ -177,7 +177,9 @@ class MCMCLM(object):
         :returns: TODO
 
         """
-        y_corrected = self._correctY(y, x, slope, 0)
+        if self._x_zoommed:
+            slope = slope_best / self._x_zoom_in_factor
+        y_corrected = self._correctY(self._y, self._x, slope, 0)
         y_density = gaussian_kde(y_corrected)
 
         y_down = min(y_corrected)
