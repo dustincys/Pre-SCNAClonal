@@ -85,7 +85,7 @@ class THetA_Converter:
 
         self._output()
 
-        data_file_name = self.input_filename_base + '.MixClone.input.pkl'
+        data_file_name = self.input_filename_base + '.THetA.input.pkl'
         outfile = open(data_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
 
@@ -165,7 +165,7 @@ class THetA_Converter:
 
         interval_count_file = open(self.BICseq_bed_fileName_corrected, 'w')
         interval_count_file.write(
-            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\gc\n")
+            "ID\tchrm\tstart\tend\ttumorCount\tnormalCount\tgc\n")
 
         for i in range(len(self.data.segments)):
             ID_i = self.data.segments[i].chrom_idx
