@@ -56,9 +56,6 @@ class THetA_Converter:
 
         self.data = Data()
 
-#       peak range
-        self.pr = 0
-
     def convert(self, method, pkl_flag=False):
         """convert data to the THetA style
         :returns: BICseq bed file, gc corrected, and relevant parameters
@@ -111,8 +108,8 @@ class THetA_Converter:
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         m, c = mcmclm.run()
         print "MCMC slope = {}".format(m)
-        self.pr = mcmclm.getPeakRange(m)
-        print "MCMC peak range = {}".format(self.pr)
+        self.data.pr = mcmclm.getPeakRange(m)
+        print "MCMC peak range = {}".format(self.data.pr)
         self._correct(m, c)
 
     def _correct(self, slope, intercept):
@@ -145,7 +142,7 @@ class THetA_Converter:
 
 # todo   trimed x, y position
         x, y, m, c = gsp.output()
-        self.pr = (max(y) - min(y)) / self.max_copynumber
+        self.data.pr = (max(y) - min(y)) / self.max_copynumber
 
         print "x, y, m, c"
         print x, y, m, c
@@ -158,7 +155,7 @@ class THetA_Converter:
         The Upper and Lower Boundaries for normal heuristic
         The GC corrected interval_count_file
         """
-        upper_bound, lower_bound = self.data.compute_normal_boundary(self.pr)
+        upper_bound, lower_bound = self.data.compute_normal_boundary(self.data.pr)
         print "upper_bound = {0}\n lower_bound = {1}".format(upper_bound,
                                                              lower_bound)
         sys.stdout.flush()
