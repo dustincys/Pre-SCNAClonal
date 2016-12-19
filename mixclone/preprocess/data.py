@@ -371,7 +371,7 @@ class Data:
                 lower_bound = ratio
 
         if (upper_bound / lower_bound) < np.exp(pr):
-            a = (np.log(pr) * lower_bound - upper_bound) / (1.0 + np.log(pr))
+            a = (np.exp(pr) * lower_bound - upper_bound) / (1.0 + np.exp(pr))
             upper_bound = upper_bound + a
             lower_bound = lower_bound - a
 
