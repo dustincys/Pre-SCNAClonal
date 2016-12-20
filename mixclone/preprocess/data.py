@@ -55,6 +55,8 @@ class Data:
         self.seg_num = 0
         self.Lambda_S = -1
         self.segments = []
+#       peak reange
+        self.pr = 0
 
     def reload_segmentsn(self, normal_bam, tumor_bam, bed_file_normalized_name):
         """reload the gc corrected tumor counts
@@ -378,22 +380,32 @@ class Data:
         sum_r_n = sum(map(lambda seg: seg.normal_reads_num, self.segments))
         sum_r_t = sum(map(lambda seg: seg.tumor_reads_num, self.segments))
 
+        C = (float(sum_r_n) / float(sum_r_t))
+
         upper_bound = -float('inf')
         lower_bound = float('inf')
 
         for seg in baselines:
             ratio = (float(seg.tumor_reads_num) /
-                     float(seg.normal_reads_num)) *\
-                (float(sum_r_n) / float(sum_r_t))
+                     float(seg.normal_reads_num)) * C
             if upper_bound < ratio:
                 upper_bound = ratio
             if lower_bound > ratio:
                 lower_bound = ratio
 
+        print "pre upper bound = {}".format(upper_bound)
+        print "pre lower bound = {}".format(lower_bound)
+        print "pr"
+        print pr
+
         if (upper_bound / lower_bound) < np.exp(pr):
-            a = (np.log(pr) * lower_bound - upper_bound) / (1.0 + np.log(pr))
-            upper_bound = upper_bound + a
-            lower_bound = lower_bound - a
+            bl_up = 0.5 * pr + np.log(self.Lambda_S)
+            bl_low = -0.5 * pr + np.log(self.Lambda_S)
+            upper_bound = np.exp(bl_up) * C
+            lower_bound = np.exp(bl_low) * C
+
+        print "after upper bound = {}".format(upper_bound)
+        print "after lower bound = {}".format(lower_bound)
 
         return upper_bound, lower_bound
 
