@@ -85,6 +85,8 @@ class THetA_Converter:
 
         self._output()
 
+        self.data.outSNV(self.input_filename_base + '.snv.txt')
+
         data_file_name = self.input_filename_base + '.MixClone.input.pkl'
         outfile = open(data_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
