@@ -399,8 +399,8 @@ class Data:
         print pr
 
         if (upper_bound / lower_bound) < np.exp(pr):
-            bl_up = 0.5 * pr + np.log(self.Lambda_S)
-            bl_low = -0.5 * pr + np.log(self.Lambda_S)
+            bl_up = 0.2 * pr + np.log(self.Lambda_S)
+            bl_low = -0.2 * pr + np.log(self.Lambda_S)
             upper_bound = np.exp(bl_up) * C
             lower_bound = np.exp(bl_low) * C
 
