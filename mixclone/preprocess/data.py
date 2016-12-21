@@ -215,6 +215,26 @@ class Data:
                 normalData_temp, tumorData_temp)
             self.segments[j].paired_counts = paired_counts_temp
 
+    def outSNV(self, outFilePath):
+        """output SNV file for absCNseg
+
+        :outFilePath: TODO
+        :returns: TODO
+
+        """
+        with open(outFilePath, "w") as outFile:
+            outFile.write("chrom\tposition\ttumor_var_freq\n")
+            for seg in self.segments:
+                if seg.paired_counts is not None:
+                    for item in seg.paired_counts:
+                        tumorRef = item[2]
+                        tumorMut = item[3]
+                        chrom = item[4]
+                        pos = item[5]
+                        freq = tumorMut * 1.0 / (tumorMut + tumorRef)
+                        outFile.write(
+                            "{0}\t{1}\t{2}\n".format(chrom, pos, freq))
+
     def get_LOH_frac(self):
         for j in range(0, self.seg_num):
             self.segments[j].LOH_frac = get_LOH_frac(
