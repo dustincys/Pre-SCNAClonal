@@ -172,7 +172,7 @@ class THetA_Converter:
             normalCount_i = int(float(self.data.segments[i].normal_reads_num))
             gc_i = self.data.segments[i].gc
             interval_count_file.write(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i,
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(chrm_i,
                                                              start_i,
                                                              end_i,
                                                              tumorCount_i,

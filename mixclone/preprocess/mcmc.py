@@ -122,9 +122,6 @@ class MCMCLM(object):
 
             prob = sum(heapq.nlargest(self._max_copynumber,  y_ys[peaks[0]]))
 
-            if self._max_copynumber <= len(peaks[0]):
-                prob = prob * 100
-
             return prob
 
         slope_distribution = pymc.stochastic_from_dist(

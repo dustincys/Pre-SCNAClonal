@@ -43,15 +43,15 @@ def main():
         chrom, start, end, sampleReads, referenceReads, gc\
             = line.strip('\n').split('\t')[0:6]
 
-        temp_y = np.log(int(sampleReads) + 1) - np.log(int(referenceReads) + 1)
+        temp_y = np.log(int(float(sampleReads)) + 1) - np.log(int(float(referenceReads)) + 1)
 
         if temp_y < float(args.lower_bound) or \
                 temp_y > float(args.upper_bound) or\
                 chrom not in CHROM_LIST:
             continue
 
-        outfile.write('\t'.join([chrom, start, end, sampleReads,
-                                 referenceReads, gc]) + '\n')
+        outfile.write('\t'.join([chrom, start, end,str(int(float(sampleReads))),
+                                 str(int(float(referenceReads))), gc]) + '\n')
 
     infile.close()
     outfile.close()
