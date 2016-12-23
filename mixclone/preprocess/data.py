@@ -297,9 +297,9 @@ class Data:
         print "min snp density = {}".format(min(segmentsC))
         APM_num = 0
         for j in range(0, self.seg_num):
-            self.segments[j].APM_status == "NONE"
+            self.segments[j].APM_status = "NONE"
             if segmentsC[j] < baseline_thred_SNPDENSITY:
-                self.segments[j].APM_status == "NONE"
+                self.segments[j].APM_status = "NONE"
                 continue
             self.segments[j].APM_status = get_APM_status(
                 self.segments[j].APM_frac, baseline_thred_APM)
