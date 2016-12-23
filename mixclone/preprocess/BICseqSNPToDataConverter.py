@@ -120,7 +120,7 @@ class THetA_Converter:
         m, c = mcmclm.run()
         print "MCMC slope = {}".format(m)
 #       self.data.pr = mcmclm.getPeakRange(m)
-        print "MCMC peak range = {}".format(self.data.pr)
+#       print "MCMC peak range = {}".format(self.data.pr)
         self._correct(m, c)
 
     def _correct(self, slope, intercept):

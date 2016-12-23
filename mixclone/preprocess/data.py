@@ -297,6 +297,7 @@ class Data:
         print "min snp density = {}".format(min(segmentsC))
         APM_num = 0
         for j in range(0, self.seg_num):
+            self.segments[j].APM_status == "NONE"
             if segmentsC[j] < baseline_thred_SNPDENSITY:
                 self.segments[j].APM_status == "NONE"
                 continue
@@ -305,7 +306,7 @@ class Data:
             if self.segments[j].APM_status == "TRUE":
                 APM_num = APM_num + 1
 
-        print "APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
+        print "SNP APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
 
     def get_APM_status(self, baseline_thred_APM):
         APM_num = 0
@@ -338,6 +339,7 @@ class Data:
                 reads_depth_ratio_log.append(np.log(ratio))
                 reads_depth_ratio.append(ratio)
 
+        print "compute lambda APM_num/seg_num = {0}/{1}".format(len(reads_depth_ratio), self.seg_num)
         reads_depth_ratio = np.array(reads_depth_ratio)
         reads_depth_ratio_log = np.array(reads_depth_ratio_log)
         if reads_depth_ratio_log.shape[0] == 0:
@@ -361,7 +363,7 @@ class Data:
             print "cluster temp : {}".format(cluster_temp)
             rdr_temp = reads_depth_ratio[clusters == cluster_temp].mean()
             print "rdr_temp"
-            print rdr_temp
+            print "log: {}".format(np.log(rdr_temp))
             if rdr_min > rdr_temp:
                 rdr_min = rdr_temp
                 cluster_min = cluster_temp
