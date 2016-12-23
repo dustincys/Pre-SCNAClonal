@@ -212,7 +212,7 @@ def get_APM_frac_MAXMIN_SNP(counts):
 
     APM_num = np.where(np.logical_and(p_T > APM_N_MIN,
                                       p_T <= 0.5))[0].shape[0]
-    APM_frac = APM_num*1.0/I
+    APM_frac = APM_num * 1.0 / (I + 1.0)
 
     return APM_frac
     pass
@@ -268,7 +268,7 @@ def get_LOH_frac_SNP(counts):
     p_T = binom.cdf(l_T, d_T, p)
 
     LOH_num = np.where(p_T < thred)[0].shape[0]
-    LOH_frac = LOH_num*1.0/I
+    LOH_frac = (LOH_num + 1.0)*1.0/(I + 1.0)
 
     return LOH_frac
 
@@ -332,7 +332,7 @@ def get_APM_frac(counts):
 def get_LOH_status(LOH_frac, baseline_thred):
     LOH_FRAC_MAX = constants.LOH_FRAC_MAX
 
-    if LOH_frac == -1:
+    if LOH_frac < 0:
         LOH_status = 'NONE'
     elif LOH_frac < baseline_thred:
         LOH_status = 'FALSE'
@@ -347,7 +347,7 @@ def get_LOH_status(LOH_frac, baseline_thred):
 
 
 def get_APM_status(APM_frac, baseline_thred_APM):
-    if APM_frac == -1:
+    if APM_frac < 0:
         APM_status = "NONE"
     elif APM_frac > baseline_thred_APM:
         APM_status = "TRUE"
