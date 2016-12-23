@@ -347,7 +347,9 @@ def get_LOH_status(LOH_frac, baseline_thred):
 
 
 def get_APM_status(APM_frac, baseline_thred_APM):
-    if APM_frac > baseline_thred_APM:
+    if APM_frac == -1:
+        APM_status = "NONE"
+    elif APM_frac > baseline_thred_APM:
         APM_status = "TRUE"
     else:
         APM_status = "FALSE"

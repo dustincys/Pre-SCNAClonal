@@ -96,6 +96,10 @@ class THetA_Converter:
         :returns: TODO
 
         """
+        print "LOH = "
+        print self.baseline_thred_LOH
+        print "APM = "
+        print self.baseline_thred_APM
         self.data.get_LOH_frac_SNP()
         self.data.get_LOH_status(self.baseline_thred_LOH, True)
         self.data.get_APM_frac_SNP()

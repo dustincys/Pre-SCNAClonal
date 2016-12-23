@@ -33,9 +33,9 @@ class Segment:
         self.normal_reads_num = -1
         self.tumor_reads_num = -1
         self.sites_num = 0
-        self.LOH_frac = 0.0
+        self.LOH_frac = -1
         self.LOH_status = 'NONE'
-        self.APM_frac = 0.0
+        self.APM_frac = -1
         self.APM_status = 'NONE'
         self.baseline_label = 'FALSE'
         self.log2_ratio = 0.0
@@ -271,13 +271,17 @@ class Data:
 
         if flag_runpreprocess:
             LOH_num = 0
+            FLOH_num = 0
             for j in range(0, self.seg_num):
                 self.segments[j].LOH_status = get_LOH_status(
                     self.segments[j].LOH_frac, baseline_thred)
                 if self.segments[j].LOH_status == "TRUE":
                     LOH_num = LOH_num + 1
+                elif self.segments[j].LOH_status == "FALSE":
+                    FLOH_num = FLOH_num + 1
 
             print "LOH_num/seg_num = {0}/{1}".format(LOH_num, self.seg_num)
+            print "FLOH_num/seg_num = {0}/{1}".format(FLOH_num, self.seg_num)
         else:
             print "get_LOH_status function called from model."
 
@@ -381,6 +385,8 @@ class Data:
         sum_r_t = sum(map(lambda seg: seg.tumor_reads_num, self.segments))
 
         C = (float(sum_r_n) / float(sum_r_t))
+        print "C = "
+        print C
 
         upper_bound = -float('inf')
         lower_bound = float('inf')

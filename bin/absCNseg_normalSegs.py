@@ -41,7 +41,7 @@ class ABSCNSEGIN(object):
                     segLen = str(int(end) - int(start))
                     tumorCount = float(listLine[3])
                     normalCount = float(listLine[4])
-                    ratio = str(tumorCount / normalCount)
+                    ratio = str((tumorCount + 1.0) / (normalCount + 1.0))
 
                     outFile.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(chrom,
                                                                      start,
@@ -79,3 +79,20 @@ class ABSCNSEGIN(object):
                                                                      segLen,
                                                                      ratio))
 
+def main():
+
+    absIO = ABSCNSEGIN()
+
+    idx = ["n5t95", "n20t80", "n40t60", "n60t40", "n80t20", "n95t5"]
+    for item in idx:
+        originalSegPath = "/data/yschu/projects/subclone/data/BICseq/ucsc_benchmark/1954/getGCMap/getGCMapHCC1954.mix1.{}.bam.bicseq.gc.txt".format(item)
+        correcstedSegPath = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/MixClone/corrected/getGCMapHCC1954.mix1.{}.bam.bicseq.gc.txt.50e4.bed.gccorrected".format(item)
+        outOriginalFn = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/absCNseq/original/{}.original.fn".format(item)
+        outCorrectedFn = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/absCNseq/result/{}.corrected.fn".format(item)
+        absIO.getSegFn(originalSegPath, outOriginalFn)
+        absIO.getSegFnCorrected(correcstedSegPath, outCorrectedFn)
+        print "finished {}!".format(item)
+
+
+if __name__=="__main__":
+    main()
