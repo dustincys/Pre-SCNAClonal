@@ -16,6 +16,8 @@ import sys
 import pickle as pkl
 
 import numpy as np
+from scipy.stats import gaussian_kde
+from scipy.signal import argrelextrema
 
 from plotGC import GCStripePlot
 
@@ -114,7 +116,7 @@ class THetA_Converter:
         mcmclm = MCMCLM(self.data, 0, self.subclone_num, self.max_copynumber)
         m, c = mcmclm.run()
         print "MCMC slope = {}".format(m)
-        self.data.pr = mcmclm.getPeakRange(m)
+#       self.data.pr = mcmclm.getPeakRange(m)
         print "MCMC peak range = {}".format(self.data.pr)
         self._correct(m, c)
 
@@ -148,12 +150,50 @@ class THetA_Converter:
 
 # todo   trimed x, y position
         x, y, m, c = gsp.output()
-        self.data.pr = (max(y) - min(y)) / self.max_copynumber
+#       self.data.pr = (max(y) - min(y)) / self.max_copynumber
 
         print "x, y, m, c"
         print x, y, m, c
 
         self._correct(m, c)
+
+    def getPeakRange(self):
+        """
+        :returns: TODO
+
+        """
+        baseLine = np.log(self.data.Lambda_S)
+
+        y_corrected = np.array(map(lambda seg: np.log(seg.tumor_reads_num + 1) -
+                                   np.log(seg.normal_reads_num + 1),
+                                   self.data.segments))
+        y_density = gaussian_kde(y_corrected)
+        y_down = min(y_corrected)
+        y_up = max(y_corrected)
+        y_xs = np.linspace(y_down, y_up,
+                           1000*self.subclone_num*self.max_copynumber)
+        y_ys = y_density(y_xs)
+        peaks = argrelextrema(y_ys, np.greater)[0]
+        valleys = argrelextrema(y_ys, np.less)[0]
+
+        basePeak = peaks[np.argmin(np.abs(y_ys[peaks] - baseLine))]
+
+        valley_u = len(y_ys)
+        valley_l = -1
+        for v in valleys:
+            if v < basePeak:
+                if v > valley_l:
+                    valley_l = v
+            if v > basePeak:
+                if v < valley_u:
+                    valley_u = v
+
+        hillside_u = y_xs[valley_u] - y_xs[basePeak]
+        hillside_l = y_xs[basePeak] - y_xs[valley_l]
+
+        pr = 2 * min(hillside_l, hillside_u)
+
+        return pr
 
     def _output(self):
         """Output the parameter for THetA
@@ -161,7 +201,9 @@ class THetA_Converter:
         The Upper and Lower Boundaries for normal heuristic
         The GC corrected interval_count_file
         """
-        upper_bound, lower_bound = self.data.compute_normal_boundary(self.data.pr)
+        self.data.pr = self.getPeakRange()
+        upper_bound, lower_bound = self.data.compute_normal_boundary(
+            self.data.pr)
         print "upper_bound = {0}\n lower_bound = {1}".format(upper_bound,
                                                              lower_bound)
         sys.stdout.flush()
@@ -179,11 +221,11 @@ class THetA_Converter:
             gc_i = self.data.segments[i].gc
             interval_count_file.write(
                 "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(chrm_i,
-                                                             start_i,
-                                                             end_i,
-                                                             tumorCount_i,
-                                                             normalCount_i,
-                                                             gc_i))
+                                                        start_i,
+                                                        end_i,
+                                                        tumorCount_i,
+                                                        normalCount_i,
+                                                        gc_i))
 
         interval_count_file.close()
 
