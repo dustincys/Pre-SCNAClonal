@@ -35,6 +35,7 @@ class THetA_Converter:
                  normal_SNP_fileName, pkl_path,
                  max_copynumber, subclone_num, sampleNumber,
                  baseline_thred_LOH, baseline_thred_APM,
+                 baseline_thred_SNPDENSITY,
                  gamma, process_num):
         """
             BICseq_bed_fileName: bicseq file name
@@ -53,6 +54,7 @@ class THetA_Converter:
 
         self.baseline_thred_LOH = baseline_thred_LOH
         self.baseline_thred_APM = baseline_thred_APM
+        self.baseline_thred_SNPDENSITY = baseline_thred_SNPDENSITY
         self.gamma = gamma
         self.process_num = process_num
 
@@ -105,7 +107,8 @@ class THetA_Converter:
         self.data.get_LOH_frac_SNP()
         self.data.get_LOH_status(self.baseline_thred_LOH, True)
         self.data.get_APM_frac_SNP()
-        self.data.get_APM_status(self.baseline_thred_APM)
+        self.data.get_APM_status_SNP(self.baseline_thred_APM,
+                                     self.baseline_thred_SNPDENSITY)
         self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num, True)
 
     def _MCMC_gccorrection(self):

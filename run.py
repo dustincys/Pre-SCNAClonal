@@ -149,7 +149,14 @@ parser_THetA.add_argument('--baseline_thred_APM',
                           default=0.6, type=float,
                           help='''The threshold of average P and M SNP sites
                               fraction within each segment to
-                              define the segment as baselinei, The range is
+                              define the segment as baseline, The range is
+                          [baseline_thred_APM, 1]. Default is
+                              0.01.''')
+
+parser_THetA.add_argument('--baseline_thred_SNPDENSITY',
+                          default=0.06, type=float,
+                          help='''The threshold of density of SNP sites
+                          in segment, The range is
                           [baseline_thred_APM, 1]. Default is
                               0.01.''')
 

@@ -253,7 +253,6 @@ class Data:
             #c = max(segmentsC) / segmentsC[j]
             #self.segments[j].LOH_frac  = self.segments[j].LOH_frac  * c
 
-
     def get_APM_frac_SNP(self):
         """
         :returns: TODO
@@ -289,6 +288,24 @@ class Data:
             print "FLOH_num/seg_num = {0}/{1}".format(FLOH_num, self.seg_num)
         else:
             print "get_LOH_status function called from model."
+
+    def get_APM_status_SNP(self, baseline_thred_APM,
+                           baseline_thred_SNPDENSITY=-1):
+        segmentsC = map(lambda item: (1.0 + len(item.paired_counts)) /
+                        (1.0 * (item.end - item.start + 1)), self.segments)
+        print "max snp density = {}".format(max(segmentsC))
+        print "min snp density = {}".format(min(segmentsC))
+        APM_num = 0
+        for j in range(0, self.seg_num):
+            if segmentsC[j] < baseline_thred_SNPDENSITY:
+                self.segments[j].APM_status == "NONE"
+                continue
+            self.segments[j].APM_status = get_APM_status(
+                self.segments[j].APM_frac, baseline_thred_APM)
+            if self.segments[j].APM_status == "TRUE":
+                APM_num = APM_num + 1
+
+        print "APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
 
     def get_APM_status(self, baseline_thred_APM):
         APM_num = 0
