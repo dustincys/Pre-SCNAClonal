@@ -245,9 +245,14 @@ class Data:
         :returns: TODO
 
         """
+        #segmentsC = map(lambda item: (1.0 + len(item.paired_counts)) /
+        #                  (1.0 * (item.end - item.start + 1)), self.segments)
         for j in range(0, self.seg_num):
             self.segments[j].LOH_frac = get_LOH_frac_SNP(
                 self.segments[j].paired_counts)
+            #c = max(segmentsC) / segmentsC[j]
+            #self.segments[j].LOH_frac  = self.segments[j].LOH_frac  * c
+
 
     def get_APM_frac_SNP(self):
         """
