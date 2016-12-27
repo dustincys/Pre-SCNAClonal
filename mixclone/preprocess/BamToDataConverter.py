@@ -90,7 +90,6 @@ class MixClone_Converter:
         print "MCMC slope = {}".format(m)
         self._correct(m, c)
 
-
     def _correct(self, slope, intercept):
 
         x = np.array(map(lambda seg: seg.gc, self.data.segments))
@@ -111,7 +110,6 @@ class MixClone_Converter:
         print "gc corrected, with slope = {0}, intercept = {1}".\
             format(slope, intercept)
 
-
     def _visual_gccorrection(self):
         gsp = GCStripePlot(self.data.segments, self.sampleNumber)
         print "total number: {}".format(self.data.seg_num)
@@ -121,14 +119,13 @@ class MixClone_Converter:
 
         gsp.plot()
 
-#todo   trimed x, y position
+# todo   trimed x, y position
         x, y, m, c = gsp.output()
 
         print "x, y, m, c"
         print x, y, m, c
 
-        self._correct(m,c)
-
+        self._correct(m, c)
 
     def _baseline_selection(self):
         print "begin baseline selection.."
@@ -143,12 +140,12 @@ class MixClone_Converter:
 
     def _get_LOH_status(self):
         self.data.get_LOH_status(self.baseline_thred_LOH,
-                                 flag_runpreprocess = True)
+                                 flag_runpreprocess=True)
 
     def _compute_Lambda_S(self):
         print "begin compute lambda s .."
-        self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num,
-                                   flag_runpreprocess = True)
+        self.data.compute_Lambda_S_LOH(self.max_copynumber, self.subclone_num,
+                                       flag_runpreprocess=True)
 
     def _output(self):
         """Output the parameter for THetA
@@ -170,15 +167,19 @@ class MixClone_Converter:
             normalCount_i = self.data.segments[i].normal_reads_num
             gc_i = self.data.segments[i].gc
             interval_count_file.write(
-                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i, start_i,
-                                                        end_i, tumorCount_i,
-                                                        normalCount_i, gc_i)
+                "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n".format(ID_i, chrm_i,
+                                                             start_i,
+                                                             end_i,
+                                                             tumorCount_i,
+                                                             normalCount_i,
+                                                             gc_i)
             )
 
         interval_count_file.close()
 
         print "GC corrected interval file generated!"
         sys.stdout.flush()
+
     def _load_segmentsn(self):
         """
         :returns: TODO
@@ -253,14 +254,15 @@ class MixClone_Converter:
 
     def _get_APM_frac(self):
         self.data.get_APM_frac()
-#===============================================================================
-# Function
-#===============================================================================
+# ===============================================================================
+#  Function
+# ===============================================================================
 
 
 def process_by_segment(args_tuple):
-    seg_name, chrom_name, chrom_idx, start, end, normal_bam_filename, tumor_bam_filename, \
-        reference_genome_filename, min_depth, min_bqual, min_mqual = args_tuple
+    seg_name, chrom_name, chrom_idx, start, end, normal_bam_filename,
+    tumor_bam_filename, reference_genome_filename, min_depth, min_bqual,
+    min_mqual = args_tuple
 
     print 'Preprocessing segment {0}...'.format(seg_name)
     sys.stdout.flush()
@@ -281,7 +283,7 @@ def process_by_segment(args_tuple):
         chrom_idx,
         min_depth,
         min_bqual,
-     min_mqual)
+        min_mqual)
 
     paired_counts_j, BAF_counts_j = iterator_to_counts(paired_counts_iter)
     counts_tuple_j = (paired_counts_j, BAF_counts_j)

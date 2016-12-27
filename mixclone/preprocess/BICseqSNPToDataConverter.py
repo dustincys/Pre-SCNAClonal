@@ -109,7 +109,8 @@ class THetA_Converter:
         self.data.get_APM_frac_SNP()
         self.data.get_APM_status_SNP(self.baseline_thred_APM,
                                      self.baseline_thred_SNPDENSITY)
-        self.data.compute_Lambda_S(self.max_copynumber, self.subclone_num, True)
+        self.data.compute_Lambda_S_LOH(self.max_copynumber, self.subclone_num,
+                                       True)
 
     def _MCMC_gccorrection(self):
         """

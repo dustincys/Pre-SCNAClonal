@@ -318,6 +318,86 @@ class Data:
 
         print "APM_num/seg_num = {0}/{1}".format(APM_num, self.seg_num)
 
+
+
+    def compute_Lambda_S_LOH(self, max_copynumber, subclone_num,
+                         flag_runpreprocess=False):
+        """ compute the Lambda S, through hierarchy clustering
+        """
+
+        if not flag_runpreprocess:
+            print "compute_Lambda_S function called from model"
+            sys.stdout.flush()
+            return
+
+        thresh = constants.HC_THRESH
+
+        reads_depth_ratio_log = []
+        reads_depth_ratio = []
+        for j in range(0, self.seg_num):
+            if self.segments[j].APM_status == 'TRUE' and\
+                    self.segments[j].LOH_status == 'FALSE':
+                ratio = self.segments[
+                    j].tumor_reads_num*1.0/self.segments[j].normal_reads_num
+                reads_depth_ratio_log.append(np.log(ratio))
+                reads_depth_ratio.append(ratio)
+
+        reads_depth_ratio = np.array(reads_depth_ratio)
+        reads_depth_ratio_log = np.array(reads_depth_ratio_log)
+        if reads_depth_ratio_log.shape[0] == 0:
+            print 'Error: no APM-LOH position found, existing...'
+            print 'Either the baseline_thred_APM is too large, or the constants\
+            APM_N_MIN is too large; Or, the baseline_thred_LOH is too small'
+            sys.exit(1)
+
+        reads_depth_ratio_log = reads_depth_ratio_log.reshape(
+            reads_depth_ratio_log.shape[0], 1)
+        y = np.ones(reads_depth_ratio_log.shape)
+        reads_depth_ratio_log = np.hstack((reads_depth_ratio_log, y))
+        clusters = hcluster.fclusterdata(
+            reads_depth_ratio_log, thresh, criterion="distance")
+        mccs = Counter(clusters).most_common(max_copynumber * subclone_num)
+
+        rdr_min = float('Inf')
+        cluster_min = -1
+        for i in range(0, len(mccs)):
+            cluster_temp = mccs[i][0]
+            print "cluster temp : {}".format(cluster_temp)
+            rdr_temp = reads_depth_ratio[clusters == cluster_temp].mean()
+            print "rdr_temp"
+            print "log: {}".format(np.log(rdr_temp))
+            if rdr_min > rdr_temp:
+                rdr_min = rdr_temp
+                cluster_min = cluster_temp
+
+        print mccs
+        print "log Lambda_S: {}".format(np.log(rdr_min))
+        sys.stdout.flush()
+
+        cluster_flag = (clusters == cluster_min)
+        baseline_num = 0
+        rdr_i = 0
+        for j in range(0, self.seg_num):
+            if self.segments[j].APM_status == 'TRUE' and\
+                    self.segments[j].LOH_status == 'FALSE':
+                if cluster_flag[rdr_i]:
+                    self.segments[j].baseline_label = 'TRUE'
+                    baseline_num = baseline_num + 1
+                else:
+                    self.segments[j].baseline_label = 'FALSE'
+                rdr_i = rdr_i + 1
+            else:
+                self.segments[j].baseline_label = 'FALSE'
+
+        print "baseline_num: {}".format(baseline_num)
+
+        if baseline_num == 0:
+            print 'Error: No diploid segments found, existing...'
+            sys.exit(1)
+
+        self.Lambda_S = rdr_min
+
+
     def compute_Lambda_S(self, max_copynumber, subclone_num,
                          flag_runpreprocess=False):
         """ compute the Lambda S, through hierarchy clustering
