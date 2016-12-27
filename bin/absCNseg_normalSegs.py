@@ -50,7 +50,7 @@ class ABSCNSEGIN(object):
                                                                      ratio))
 
     def getSegFnCorrected(self,
-                          segments_file_path, segFn_file_path, baseline=-1):
+                          segments_file_path, segFn_file_path, baseline=0):
         with open(segFn_file_path, "w") as outFile:
             outFile.write(
                 "chrom\tloc.start\tloc.end\teff.seg.len\tnormalized.ratio\n")
@@ -60,17 +60,18 @@ class ABSCNSEGIN(object):
                     if line == "":
                         continue
                     listLine = line.split("\t")
-                    if listLine[0] == "ID":
+                    if listLine[0] == "chrm":
                         continue
-                    chrom = listLine[1]
-                    start = listLine[2]
-                    end = listLine[3]
+                    print listLine
+                    chrom = listLine[0]
+                    start = listLine[1]
+                    end = listLine[2]
                     segLen = str(int(end) - int(start))
-                    tumorCount = float(listLine[4])
-                    normalCount = float(listLine[5])
-                    ratio = str(tumorCount / normalCount)
-                    if baseline != -1:
-                        ratio = np.log(tumorCount / normalCount) - baseline
+                    tumorCount = float(listLine[3])
+                    normalCount = float(listLine[4])
+                    ratio = str((tumorCount + 1) / (normalCount + 1))
+                    if baseline != 0:
+                        ratio = np.log((tumorCount + 1) / (normalCount + 1)) - baseline
                         ratio = str(np.exp(ratio))
 
                     outFile.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(chrom,
@@ -84,13 +85,16 @@ def main():
     absIO = ABSCNSEGIN()
 
     idx = ["n5t95", "n20t80", "n40t60", "n60t40", "n80t20", "n95t5"]
-    for item in idx:
+
+    baseline = [-0.177, -0.185, -0.182, -0.143, -0.089, -0.040]
+
+    for item, bl in zip(idx, baseline):
         originalSegPath = "/data/yschu/projects/subclone/data/BICseq/ucsc_benchmark/1954/getGCMap/getGCMapHCC1954.mix1.{}.bam.bicseq.gc.txt".format(item)
-        correcstedSegPath = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/MixClone/corrected/getGCMapHCC1954.mix1.{}.bam.bicseq.gc.txt.50e4.bed.gccorrected".format(item)
+        correcstedSegPath = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/THetA/result/getGCMapHCC1954.mix1.{}.bam.bicseq.gc.txt.50e4.bed.gccorrected".format(item)
         outOriginalFn = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/absCNseq/original/{}.original.fn".format(item)
         outCorrectedFn = "/data/yschu/projects/subclone_GCBASELINE/pipelineTest/absCNseq/result/{}.corrected.fn".format(item)
         absIO.getSegFn(originalSegPath, outOriginalFn)
-        absIO.getSegFnCorrected(correcstedSegPath, outCorrectedFn)
+        absIO.getSegFnCorrected(correcstedSegPath, outCorrectedFn, bl)
         print "finished {}!".format(item)
 
 
