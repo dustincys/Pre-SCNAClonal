@@ -7,9 +7,8 @@
 Tumor samples often present heterogeneity, containing not only multiple subpopulations of cancerous cells defined by distinct somatic mutations, but also the normal, non-cancerous cells.
 While using the whole-genome sequencing data of tumor sample to reconstruct the subclonal composition determined by somatic copy number alternations (SCNAs), the absolute copy number and its subclonal population are both required to be estimated.
 However, the raw reads in WGS data present coupling GC bias in the same SCNA genome segmentation of paired tumor and normal samples, which largely affect the absolute copy number estimation conducted by existing SCNV based subclonal inferring tools.
-We provide Pre-SCNVClonal, a comprehensive package for both automatically and visually correcting coupling GC bias.
+We provide Pre-SCNVClonal, a comprehensive package for both automatically and visually correcting coupling GC bias and baseline correction.
 Pre-SCNVClonal could be strung together with the SCNV based subclonal inferring tool as a pipeline or run individually as needed.
-
 
 ## Requirement
 
@@ -21,7 +20,39 @@ Pre-SCNVClonal could be strung together with the SCNV based subclonal inferring 
  - `pickle`
  - `matplotlib`
 
-## Usage
+## Manual for Visually correct GC bias
+
+### Manually adjust the linear regression line
+
+1. Click this button to pan axes with left mouse, zoom with right mouse
+
+  ![Step1](http://ww4.sinaimg.cn/large/61dccbaajw1fbci9hckglj20hs0fata5.jpg "Step1")
+
+2. Adjust the `alpha` and `area` bars to better visualize the stripes
+
+  ![Step2](http://ww3.sinaimg.cn/large/61dccbaajw1fbci9hkr1lj20hs0fatbx.jpg "Step2")
+
+3. Adjust the `Slope delta` and `Interception delta` bars to move linear
+   regression line overlope one of the stripes
+
+  ![Step3](http://ww4.sinaimg.cn/large/61dccbaajw1fbci9hqatbj20hs0fawhp.jpg "Step3")
+
+4. Click `OK` button
+
+### Manually eliminate the horizontal GC bias
+
+1. Click this button off after the adjustment of `alpha` and `area` bars
+
+  ![Step4](http://ww2.sinaimg.cn/large/61dccbaajw1fbci9hvl3qj20hs0faada.jpg "Step4")
+
+2. Hold left mouse and move to pick out one stripe out, then Pre-SCNAClonal with
+   redraw the linear regression line.
+
+  ![Step5](http://ww1.sinaimg.cn/large/61dccbaajw1fbci9i06yij20hs0fajum.jpg "Step5")
+
+3. Click `OK` button
+
+## Usage of Pre-SCNAClonal
 
 Generally, SCNAs based tumor composition reconstruction tools utilize the *read count*,
 *B allele frequency (BAF)* information to estimate the abslute copy number and
@@ -34,7 +65,7 @@ information from BAM files at the heterozygous SNP position. i.e. THetA;
 
 ### Example of MixClone like
 
-#### Usage
+#### usage
 
 	usage: run.py MixClone [-h] [--pkl_path PKL_PATH]
 			       [--max_copynumber MAX_COPYNUMBER]
@@ -171,36 +202,4 @@ information from BAM files at the heterozygous SNP position. i.e. THetA;
 	    --baseline_thred_LOH 0.16 \
 	    --baseline_thred_APM 0.6
 
-
-## Manual for Visually correct GC bias
-
-### Manually adjust the linear regression line
-
-1. Click this button to pan axes with left mouse, zoom with right mouse
-
-  ![Step1](http://ww4.sinaimg.cn/large/61dccbaajw1fbci9hckglj20hs0fata5.jpg "Step1")
-
-2. Adjust the `alpha` and `area` bars to better visualize the stripes
-
-  ![Step2](http://ww3.sinaimg.cn/large/61dccbaajw1fbci9hkr1lj20hs0fatbx.jpg "Step2")
-
-3. Adjust the `Slope delta` and `Interception delta` bars to move linear
-   regression line overlope one of the stripes
-
-  ![Step3](http://ww4.sinaimg.cn/large/61dccbaajw1fbci9hqatbj20hs0fawhp.jpg "Step3")
-
-4. Click `OK` button
-
-### Manually eliminate the horizontal GC bias
-
-1. Click this button off after the adjustment of `alpha` and `area` bars
-
-  ![Step4](http://ww2.sinaimg.cn/large/61dccbaajw1fbci9hvl3qj20hs0faada.jpg "Step4")
-
-2. Hold left mouse and move to pick out one stripe out, then Pre-SCNAClonal with
-   redraw the linear regression line.
-
-  ![Step5](http://ww1.sinaimg.cn/large/61dccbaajw1fbci9i06yij20hs0fajum.jpg "Step5")
-
-3. Click `OK` button
 
